@@ -27,6 +27,7 @@ function Tasks() {
   const [formError, setFormError] = useState('')
 
   const [completedVisible, setCompletedVisible] = useState(5)
+  const [updatingTaskId, setUpdatingTaskId] = useState(null)
 
   useEffect(() => {
     const loadMembers = async () => {
@@ -84,7 +85,18 @@ function Tasks() {
   }
 
   const handleStatusChange = async (taskId, status) => {
-    await changeTaskStatus(taskId, status)
+    if (updatingTaskId) {
+      return
+    }
+
+    try {
+      setUpdatingTaskId(taskId)
+      await changeTaskStatus(taskId, status)
+    } catch {
+      // Error is already handled by useTasks.
+    } finally {
+      setUpdatingTaskId(null)
+    }
   }
 
   const getNextAction = (task) => {
@@ -464,6 +476,7 @@ function Tasks() {
                           nextAction.status
                         )
                       }
+                      disabled={updatingTaskId !== null}
                       className="
                         rounded-lg
                         bg-gradient-to-r
@@ -478,9 +491,13 @@ function Tasks() {
                         shadow-violet-900/20
                         transition
                         hover:opacity-90
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
                       "
                     >
-                      {nextAction.label}
+                      {updatingTaskId === task.id
+                        ? 'Updating...'
+                        : nextAction.label}
                     </button>
                   )}
 

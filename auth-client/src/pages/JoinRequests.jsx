@@ -17,6 +17,7 @@ function JoinRequests() {
   const [loadingRequests, setLoadingRequests] = useState(false)
   const [error, setError] = useState('')
   const [processingId, setProcessingId] = useState(null)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     if (!team?.id || user?.role !== 'manager') {
@@ -51,11 +52,15 @@ function JoinRequests() {
     try {
       setProcessingId(requestId)
       setError('')
+      setSuccessMessage('')
 
       await approveTeamJoinRequest(requestId)
 
       setRequests((current) =>
         current.filter((request) => request.id !== requestId)
+      )
+      setSuccessMessage(
+        'Join request approved successfully.'
       )
     } catch (error) {
       setError(
@@ -75,11 +80,14 @@ function JoinRequests() {
     try {
       setProcessingId(requestId)
       setError('')
-
+      setSuccessMessage('')
       await rejectTeamJoinRequest(requestId)
 
       setRequests((current) =>
         current.filter((request) => request.id !== requestId)
+      )
+      setSuccessMessage(
+        'Join request rejected successfully.'
       )
     } catch (error) {
       setError(
@@ -138,6 +146,14 @@ function JoinRequests() {
           <Card>
             <p className="text-sm text-red-400">
               {errorMessage}
+            </p>
+          </Card>
+        )}
+
+        {successMessage && (
+          <Card>
+            <p className="text-sm text-green-400">
+              {successMessage}
             </p>
           </Card>
         )}
