@@ -6,7 +6,7 @@ import { saveToken } from '../utils/token'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import AuthForm from '../components/ui/AuthForm'
-import AuthLayout from '../components/layout/AuthLayout'
+import PublicLayout from '../components/layout/PublicLayout'
 
 function Login() {
   const navigate = useNavigate()
@@ -59,7 +59,7 @@ function Login() {
   }
 
   return (
-    <AuthLayout>
+    <PublicLayout>
       <AuthForm
         title="Login"
         error={error}
@@ -100,7 +100,7 @@ function Login() {
           {loading ? 'Iniciando sesión...' : 'Login'}
         </Button>
       </AuthForm>
-    </AuthLayout>
+    </PublicLayout>
   )
 }
 

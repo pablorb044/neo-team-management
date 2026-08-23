@@ -5,14 +5,14 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import AuthLayout from '../components/layout/AuthLayout'
+import PublicLayout from '../components/layout/PublicLayout'
 import Button from '../components/ui/Button'
 
 function Landing() {
   const navigate = useNavigate()
 
   return (
-    <AuthLayout>
+    <PublicLayout>
       <div className="mx-auto w-full max-w-6xl space-y-24 py-8">
 
         {/* Hero */}
@@ -391,7 +391,7 @@ function Landing() {
         </footer>
 
       </div>
-    </AuthLayout>
+    </PublicLayout>
   )
 }
 
