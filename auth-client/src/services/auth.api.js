@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getToken } from '../utils/token'
+import { getToken, removeToken } from '../utils/token'
 
 export const api = axios.create({
   baseURL: 'http://localhost:3000'
@@ -14,6 +14,24 @@ api.interceptors.request.use((config) => {
 
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      removeToken()
+
+      if (
+        window.location.pathname !== '/login' &&
+        window.location.pathname !== '/register'
+      ) {
+        window.location.href = '/login'
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
 
 export const register = async (data) => {
   const response = await api.post('/auth/register', data)
