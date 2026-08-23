@@ -1,305 +1,110 @@
-# Auth API — Team Management Platform
+NEO — Team Management Platform
 
-Plataforma full-stack para la gestión interna de equipos, desarrollada con Node.js, Express, PostgreSQL, Prisma y React.
+NEO es una aplicación full-stack para la gestión de equipos y tareas.
 
-El proyecto comenzó como una API de autenticación y ha evolucionado hacia un MVP de gestión de organizaciones, equipos y empleados. La infraestructura de autenticación, persistencia y frontend existente constituye ahora la base técnica sobre la que se desarrolla el producto.
+El proyecto comenzó como una API de autenticación y evolucionó hasta convertirse en un MVP completo que integra organizaciones, equipos, gestión de miembros, solicitudes de incorporación, tareas, notificaciones y dashboard.
 
-> **Objetivo principal:** construir un MVP funcional de gestión de equipos y tareas, manteniendo una arquitectura profesional y evolucionándolo progresivamente sin introducir complejidad innecesaria.
+El objetivo es demostrar la capacidad de diseñar, desarrollar, probar y evolucionar una aplicación full-stack real manteniendo una arquitectura clara, reglas de negocio consistentes y una experiencia de usuario cuidada.
 
-El proyecto está orientado principalmente a portfolio y aprendizaje profesional. La prioridad es demostrar capacidad para construir y evolucionar una aplicación full-stack real, prestando especial atención a arquitectura, separación de responsabilidades, autenticación, persistencia, modelado de datos, testing, seguridad y evolución progresiva del producto.
+🚀 Qué es NEO
 
----
+NEO está pensado como una herramienta interna sencilla para equipos pequeños.
 
-## 🚀 Concepto del producto
+El flujo principal del producto es:
 
-NEO es una aplicación interna sencilla para que una organización pueda crear y gestionar un equipo de trabajo.
-
-El MVP parte de una estructura deliberadamente pequeña:
-
-```text
-Organization
-    │
-    └── Team
-          │
-          ├── Manager
-          ├── User
-          └── Member
-```
-
-El flujo principal consiste en:
-
-```text
-Usuario
+Registro
    ↓
-Registro / Login
+Login
    ↓
-Crear o acceder a una Organization
-   ↓
-Crear Team
+Organization + Team
    ↓
 Manager
    ↓
-Usuarios solicitan entrar
+Join Request
    ↓
-Manager acepta o rechaza
+Aprobación
    ↓
-Usuario entra al Team
+Team Member
    ↓
-Manager gestiona el Team
-```
+Tasks
+   ↓
+Notifications
+   ↓
+Trabajo completado
 
-El sistema está diseñado para mantener una única estructura sencilla durante el MVP.
+El dominio está deliberadamente limitado para mantener el producto pequeño y fácil de entender.
 
-### Alcance actual del MVP
+Actualmente:
 
-Durante esta fase:
+Una Organization tiene un Team.
+Un Team tiene un único Manager.
+Un usuario puede pertenecer como máximo a un Team.
+Los usuarios solicitan acceso mediante Join Requests.
+El Manager controla la gestión del Team.
+Las Tasks siguen un workflow definido.
+Las acciones importantes generan Notifications.
+✨ Funcionalidades
+🔐 Autenticación y cuentas
+Registro de usuarios.
+Login con JWT.
+Bearer Authentication.
+Persistencia y rehidratación de sesión.
+Logout.
+Protected Routes.
+Gestión automática de sesiones expiradas o inválidas.
+Consulta del usuario autenticado mediante /auth/me.
+Actualización del perfil.
+Desactivación lógica de usuarios.
+Hash de contraseñas mediante bcrypt.
+Validación de entradas con Zod.
+🏢 Organizations y Teams
+Creación de Organization + Team.
+El creador se convierte automáticamente en Manager.
+Consulta del Team y sus miembros.
+Renombrado del Team.
+Eliminación del Team.
+Abandonar un Team.
+Expulsar miembros.
+Promover usuarios a MEMBER.
+Limpieza transaccional al eliminar un Team.
 
-* Una organización tiene un Team.
-* Un Team tiene un único manager.
-* Un usuario pertenece como máximo a un Team.
-* Un manager administra un único Team.
-* Los usuarios pueden solicitar entrar en un Team.
-* El manager puede aceptar o rechazar solicitudes.
-* Un usuario puede abandonar un Team.
-* Un manager puede expulsar miembros.
-* Un manager puede renombrar y eliminar su Team.
-* Un manager puede promover un usuario a `MEMBER`.
-* `MEMBER` se mantiene como rango intermedio, pero sus permisos específicos se definirán más adelante.
-* No se implementan jerarquías organizativas avanzadas.
+La eliminación de un Team mantiene la integridad del sistema:
 
-La arquitectura podrá ampliarse posteriormente si el producto lo necesita.
-
----
-
-## 👥 Roles
-
-### Manager
-
-El manager representa al responsable directo de un Team.
-
-Actualmente puede:
-
-* Ver su Team.
-* Consultar los miembros.
-* Renombrar el Team.
-* Eliminar el Team.
-* Gestionar solicitudes de incorporación.
-* Aprobar solicitudes.
-* Rechazar solicitudes.
-* Promover usuarios a `MEMBER`.
-* Expulsar miembros.
-* Ver el estado de sus miembros.
-
-El manager no puede:
-
-* Abandonar su propio Team.
-* Eliminarse como miembro.
-* Modificar su propio rol mediante la gestión de miembros.
-
-### User
-
-`user` representa al usuario normal dentro del sistema y puede pertenecer a un Team.
-
-Actualmente puede:
-
-* Consultar su Team.
-* Ver los miembros del Team.
-* Solicitar entrar en un Team.
-* Abandonar el Team.
-* Trabajar con las funcionalidades de usuario que se incorporen posteriormente.
-
-### MEMBER
-
-`MEMBER` representa actualmente un rango intermedio entre `user` y `manager`.
-
-Durante el MVP:
-
-* Puede pertenecer a un Team.
-* Puede ser promovido por un manager.
-* Su diferenciación funcional respecto a `user` todavía no está definida completamente.
-
-No se añadirá una jerarquía más compleja hasta que exista una necesidad real de producto.
-
----
-
-## 🏢 Organizations y Teams
-
-El MVP utiliza una relación sencilla:
-
-```text
-Organization
+Delete Team
     ↓
-Team
+Eliminar Join Requests
     ↓
-Manager + Users/Members
-```
+Eliminar Tasks
+    ↓
+Limpiar teamId de los usuarios
+    ↓
+Restaurar Manager → user
+    ↓
+Eliminar Team
+🤝 Join Requests
 
-Actualmente se puede:
+Los usuarios pueden solicitar entrar en un Team utilizando su Team ID.
 
-* Crear una Organization junto a su Team.
-* Asociar automáticamente al creador como manager.
-* Consultar el Team.
-* Consultar sus miembros.
-* Renombrar el Team.
-* Eliminar el Team.
-
-### Delete Team
-
-La eliminación del Team se realiza mediante una transacción.
-
-Cuando un manager elimina un Team:
-
-* El Team se elimina.
-* Los miembros quedan sin `teamId`.
-* El manager vuelve a tener rol `user`.
-* Las solicitudes de incorporación asociadas al Team se eliminan.
-
----
-
-## 🤝 Join Requests
-
-La incorporación al Team utiliza un sistema basado en solicitudes.
-
-Flujo:
-
-```text
 User
-   ↓
+  ↓
 Create Join Request
-   ↓
+  ↓
 Pending
-   ↓
-Manager
-   ├── Approve
-   └── Reject
-```
-
-El manager dispone de una página específica:
-
-```text
-/join-requests
-```
-
-donde puede consultar:
-
-* Username del solicitante.
-* Email del solicitante.
-* Fecha de la solicitud.
-* Estado pendiente.
-
-### Reutilización de solicitudes
-
-Una solicitud `approved` o `rejected` puede reutilizarse posteriormente.
-
-Esto permite:
-
-```text
-approved
-   ↓
-user abandona Team
-   ↓
-vuelve a solicitar
-   ↓
-pending
-```
-
-o:
-
-```text
-rejected
-   ↓
-vuelve a solicitar
-   ↓
-pending
-```
-
-La misma solicitud se reutiliza en lugar de crear una fila duplicada.
-
-Las solicitudes pendientes continúan siendo únicas por combinación de usuario y Team.
-
----
-
-## 👥 Gestión de miembros
-
-El manager dispone actualmente de las siguientes acciones:
-
-### Make Member
-
-Permite cambiar el rol de un usuario que ya pertenece al Team:
-
-```text
-user
   ↓
-Make Member
-  ↓
-MEMBER
-```
-
-No permite modificar el rol del propio manager.
-
-### Remove Member
-
-Permite expulsar un miembro:
-
-```text
 Manager
-   ↓
-Remove
-   ↓
-Confirmación
-   ↓
-teamId = null
-```
+  ├── Approve
+  └── Reject
 
-El manager no puede eliminarse a sí mismo.
+El sistema:
 
-### Leave Team
+evita solicitudes pendientes duplicadas;
+permite aprobar o rechazar solicitudes;
+permite volver a solicitar acceso después de una solicitud aprobada o rechazada;
+restringe la gestión de solicitudes al Manager correspondiente.
+📋 Tasks
 
-Un usuario normal puede abandonar voluntariamente su Team:
+Las Tasks utilizan un workflow controlado:
 
-```text
-User
-   ↓
-Leave Team
-   ↓
-teamId = null
-```
-
-El manager no puede abandonar su propio Team.
-
----
-
-## 📋 Sistema de tareas
-
-El sistema de tareas será la funcionalidad principal de trabajo del MVP.
-
-**Todavía está pendiente de implementación.**
-
-El objetivo inicial es permitir que un manager cree tareas y las asigne a usuarios del Team.
-
-Flujo previsto:
-
-```text
-Manager
-   ↓
-Create Task
-   ↓
-Assign
-   ↓
-User
-   ↓
-Work
-   ↓
-Submit
-   ↓
-Manager Review
-   ↓
-DONE
-```
-
-Estados previstos:
-
-```text
 SENT
   ↓
 WORKING
@@ -307,226 +112,162 @@ WORKING
 SUBMITTED
   ↓
 DONE
-```
 
-### SENT
+Flujo principal:
 
-La tarea ha sido creada y asignada.
+Manager
+   ↓
+Crear y asignar Task
+   ↓
+Member
+   ↓
+Start task
+   ↓
+Submit task
+   ↓
+Manager
+   ↓
+Complete task
+   ↓
+DONE
 
-### WORKING
+El backend valida tanto los permisos como las transiciones de estado permitidas.
 
-El usuario ha comenzado a trabajar.
+La interfaz separa las Tasks activas de las completadas y muestra progresivamente las Tasks DONE para evitar listas innecesariamente largas.
 
-### SUBMITTED
+🔔 Notifications
 
-El usuario considera que ha terminado y entrega la tarea para revisión.
+El sistema genera notificaciones asociadas a eventos relevantes del producto.
 
-### DONE
+Actualmente incluye eventos relacionados con:
 
-El manager confirma que la tarea está completada.
+Tasks asignadas.
+Tasks entregadas.
+Tasks completadas.
+Join Requests.
 
-Durante el MVP no se implementarán inicialmente estados adicionales como:
+El frontend permite:
 
-* `REJECTED`
-* `CANCELLED`
-* `BLOCKED`
+consultar notificaciones;
+mostrar contador de no leídas;
+marcar una notificación como leída;
+marcar todas como leídas;
+polling automático;
+mantener las notificaciones persistidas.
+📊 Dashboard
 
-La entrega podrá mantenerse inicialmente sencilla, utilizando texto y, si resulta necesario, archivos asociados.
+El Dashboard adapta su información al usuario autenticado.
 
----
+Los Managers obtienen una visión general de las Tasks de su Team.
 
-## 🔐 Autenticación
+Los Members obtienen una visión de sus propias Tasks.
 
-La autenticación JWT constituye la infraestructura base del proyecto.
+Los estados principales son:
 
-Actualmente incluye:
+SENT
+WORKING
+SUBMITTED
+DONE
 
-* Registro de usuarios.
-* Login.
-* Logout.
-* JWT.
-* Bearer Authentication.
-* Persistencia de sesión.
-* Rehidratación de sesión.
-* Rutas protegidas.
-* `/auth/me`.
-* Actualización del perfil.
-* Desactivación lógica de usuarios.
-* Validación mediante Zod.
-* Manejo de errores de Prisma.
-* Tests de integración.
+El objetivo es mostrar información útil sin añadir estadísticas o gráficos únicamente por motivos visuales.
 
-La infraestructura existente se mantiene y se reutiliza.
+🎨 Frontend y UX
 
-No se plantea rehacer el sistema de autenticación mientras siga siendo adecuado para el producto.
+La interfaz incluye:
 
----
+Landing Page pública.
+Login y Register.
+navegación pública compartida;
+Dashboard;
+Tasks;
+Team;
+Organization;
+Join Requests;
+Settings;
+Dark Mode / Light Mode;
+responsive layout;
+navegación móvil;
+estados de loading;
+estados de éxito;
+estados de error;
+prevención de acciones duplicadas;
+componentes UI reutilizables.
+👥 Roles y permisos
 
-## 👤 Perfil
+NEO mantiene tres roles principales:
 
-Actualmente incluye:
+Acción	Manager	MEMBER / user
+Gestionar Team	✅	❌
+Gestionar Join Requests	✅	❌
+Crear Tasks	✅	❌
+Trabajar en Tasks asignadas	❌	✅
+Completar Tasks	✅	❌
+Abandonar Team	❌	✅
+Expulsar miembros	✅	❌
+Promover a MEMBER	✅	❌
 
-* Profile protegido.
-* Edición de username.
-* Edición de email.
-* Cancelación de cambios.
-* Estados de loading, error y éxito.
-* Prevención de peticiones duplicadas.
-* Persistencia mediante API.
+El backend es la autoridad final para todas las reglas de autorización.
 
-La actualización se realiza mediante:
+🧪 Testing
 
-```text
-PUT /auth/me
-```
+La suite de backend cuenta actualmente con:
 
-Flujo:
+6 archivos de test
+100 tests
+100 passed
+0 failed
 
-```text
-Profile.jsx
-    ↓
-useProfile
-    ↓
-auth.api.js
-    ↓
-PUT /auth/me
-    ↓
-AuthController
-    ↓
-UserModel
-    ↓
-Prisma
-    ↓
-PostgreSQL
-```
+Los tests utilizan Vitest + Supertest y una base de datos de testing aislada.
 
----
+La cobertura incluye:
 
-## 🖥️ Frontend
+Auth
+Registro.
+Login.
+Autenticación.
+Perfil.
+Desactivación de usuarios.
+Casos de error.
+Organization y Team
+Creación.
+Acceso.
+Miembros.
+Leave Team.
+Remove Member.
+Actualización de roles.
+Rename Team.
+Delete Team.
+Permisos.
+Usuarios pertenecientes a otros Teams.
+Limpieza de relaciones.
+Join Requests
+Creación.
+Solicitudes duplicadas.
+Approve.
+Reject.
+Autorización del Manager.
+Managers de otros Teams.
+Reutilización después de approved.
+Reutilización después de rejected.
+Eliminación asociada a un Team eliminado.
+Tasks
+Creación.
+Asignación.
+Validación del Team.
+Validación del miembro.
+Acceso a Tasks propias.
+Transiciones de estado.
+Protección de Tasks ajenas.
+Completion por Manager.
+Transiciones inválidas.
 
-El frontend está construido con React + Vite.
+La suite no se limita a comprobar el camino correcto: también valida reglas de negocio, autorización y casos límite relevantes.
 
-Actualmente incluye:
+🏗️ Arquitectura
+Backend
 
-* React.
-* Vite.
-* React Router.
-* Axios.
-* Context API.
-* `AuthContext`.
-* Hooks reutilizables.
-* AppLayout.
-* Sidebar.
-* Header.
-* Dashboard.
-* Team.
-* Organization.
-* Join Requests.
-* Settings.
-* Componentes UI reutilizables.
-* Dark / Light mode.
-* Persistencia del tema mediante `localStorage`.
-* Loading / success / error states.
-* Navegación protegida.
+NEO utiliza una arquitectura por capas:
 
-Páginas principales actuales:
-
-```text
-/login
-/register
-/dashboard
-/team
-/organization
-/join-requests
-/settings
-```
-
-La página `/join-requests` está orientada al manager.
-
----
-
-## 🛠️ Stack
-
-### Backend
-
-* Node.js
-* Express
-* PostgreSQL
-* Prisma ORM
-* Docker
-* JWT
-* bcrypt
-* Zod
-
-### Frontend
-
-* React
-* Vite
-* React Router
-* Axios
-* Context API
-* Tailwind CSS
-* `@tailwindcss/vite`
-* Lucide React
-
-### Testing
-
-* Vitest
-* Supertest
-
----
-
-## 📁 Arquitectura
-
-```text
-auth-api/
-│
-├── src/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── schemas/
-│   ├── lib/
-│   ├── utils/
-│   ├── auth-API/
-│   ├── app.js
-│   └── server.js
-│
-├── prisma/
-│   ├── schema.prisma
-│   └── migrations/
-│
-├── tests/
-│
-├── auth-client/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── auth/
-│   │   │   ├── layout/
-│   │   │   ├── profile/
-│   │   │   └── ui/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── utils/
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   └── package.json
-│
-├── docker-compose.yml
-├── package.json
-├── PROJECT_GUIDE.md
-└── README.md
-```
-
-### Backend
-
-La API mantiene una arquitectura basada en capas:
-
-```text
 Routes
   ↓
 Controllers
@@ -536,540 +277,304 @@ Models
 Prisma
   ↓
 PostgreSQL
-```
 
-Los controllers no acceden directamente a Prisma.
+Responsabilidades principales:
 
-La persistencia pasa mediante los Models y Prisma ORM.
+routes → definición de endpoints;
+controllers → gestión HTTP y coordinación del flujo;
+models → acceso a datos mediante Prisma;
+schemas → validación de entradas con Zod;
+middleware → autenticación y lógica transversal;
+utils y lib → utilidades e integraciones de infraestructura.
 
-### Frontend
+Los Controllers no acceden directamente a Prisma.
 
-La arquitectura sigue:
+Frontend
 
-```text
+La aplicación React sigue una separación similar:
+
+App
+  ↓
+React Router
+  ↓
 Pages
   ↓
-Components
-  ↓
-Context / Hooks
+Hooks / Context
   ↓
 Services
   ↓
 Backend API
-```
 
-Los services centralizan las peticiones HTTP.
+Los Services centralizan las peticiones HTTP y los Hooks encapsulan lógica reutilizable.
 
-Los hooks encapsulan lógica reutilizable.
+🛠️ Stack
+Backend
+Node.js
+Express
+PostgreSQL
+Prisma ORM
+JWT
+bcrypt
+Zod
+Docker
+Frontend
+React
+Vite
+React Router
+Axios
+Context API
+Tailwind CSS
+Lucide React
+Testing
+Vitest
+Supertest
+📁 Estructura del proyecto
+auth-api/
+│
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+│
+├── src/
+│   ├── controllers/
+│   ├── lib/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── schemas/
+│   ├── utils/
+│   ├── app.js
+│   └── server.js
+│
+├── tests/
+│
+├── auth-client/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── utils/
+│   └── package.json
+│
+├── .env.example
+├── docker-compose.yml
+├── package.json
+├── prisma.config.ts
+└── README.md
+🔐 Seguridad
 
-Actualmente existen, entre otros:
+La autenticación utiliza JWT.
 
-* `useAuth`
-* `useProfile`
-* `useDashboard`
+Las peticiones protegidas utilizan:
 
-`useDashboard` gestiona los datos de Organization y Team y permite refrescar el estado después de determinadas operaciones.
+Authorization: Bearer <token>
 
----
+La API diferencia entre:
 
-## 🧪 Testing
+401 → problema de autenticación o sesión
+403 → usuario autenticado pero sin permisos
 
-Los tests de backend utilizan:
+La autorización se comprueba siempre en backend.
 
-* Vitest.
-* Supertest.
+Ejemplos:
 
-Actualmente existen:
+Un Manager no puede gestionar otro Team.
+Un usuario no puede acceder a otra Organization.
+Un Member no puede modificar Tasks ajenas.
+Un Manager no puede eliminarse a sí mismo del Team.
+Las transiciones de Task inválidas son rechazadas.
+Los usuarios inactivos no pueden acceder a recursos protegidos.
 
-```text
-84 tests
-```
+Los secretos como JWT_SECRET y DATABASE_URL no forman parte del repositorio.
 
-y el bloque de Join Requests / Team management ha ampliado la suite hasta:
+🗄️ Base de datos
 
-```text
-85 tests
-```
+NEO utiliza PostgreSQL con Prisma.
 
-La suite cubre actualmente:
+Modelos principales:
 
-### Auth
+User
+Organization
+Team
+TeamJoinRequest
+Task
+Notification
 
-* Registro.
-* Login.
-* Autenticación.
-* Perfil.
-* Casos límite.
+La base de datos utiliza relaciones, restricciones de integridad e índices donde resultan útiles.
 
-### Organization
+Las notificaciones mantienen la referencia a las Tasks como opcional para permitir conservar el historial aunque una Task desaparezca.
 
-* Creación.
-* Acceso.
-* Validaciones.
+La eliminación de Teams se ejecuta mediante una transacción para garantizar la consistencia de los datos relacionados.
 
-### Team
-
-* Obtener Team.
-* Obtener miembros.
-* Leave Team.
-* Remove Member.
-* Update Member Role.
-* Rename Team.
-* Delete Team.
-* Permisos entre managers y miembros.
-* Usuarios de otros Teams.
-* Eliminación de Team y limpieza de relaciones.
-
-### Join Requests
-
-* Crear solicitud.
-* Duplicados pendientes.
-* Approve.
-* Reject.
-* Permisos de manager.
-* Managers de otros Teams.
-* Reutilización tras `approved`.
-* Reutilización tras `rejected`.
-* Limpieza al eliminar un Team.
-
-El proyecto utiliza una base de datos de testing aislada para evitar que los tests modifiquen accidentalmente los datos de desarrollo.
-
-La funcionalidad no se considera terminada únicamente porque funcione manualmente.
-
----
-
-## 📡 Endpoints principales
-
-### Auth
-
-| Método | Endpoint         | Descripción                 |
-| ------ | ---------------- | --------------------------- |
-| GET    | `/ping`          | Health check                |
-| POST   | `/auth/register` | Registrar usuario           |
-| POST   | `/auth/login`    | Iniciar sesión              |
-| GET    | `/auth/me`       | Obtener usuario autenticado |
-| PUT    | `/auth/me`       | Actualizar usuario          |
-| DELETE | `/auth/me`       | Desactivar usuario          |
-
-### Organizations
-
-| Método | Endpoint         | Descripción               |
-| ------ | ---------------- | ------------------------- |
-| POST   | `/organizations` | Crear Organization + Team |
-
-### Teams
-
-| Método | Endpoint                              | Descripción      |
-| ------ | ------------------------------------- | ---------------- |
-| GET    | `/teams/:teamId`                      | Obtener Team     |
-| GET    | `/teams/:teamId/members`              | Obtener miembros |
-| DELETE | `/teams/:teamId/members/me`           | Abandonar Team   |
-| DELETE | `/teams/:teamId/members/:userId`      | Expulsar miembro |
-| PATCH  | `/teams/:teamId/members/:userId/role` | Actualizar rol   |
-| PATCH  | `/teams/:teamId`                      | Actualizar Team  |
-| DELETE | `/teams/:teamId`                      | Eliminar Team    |
-
-### Join Requests
-
-| Método | Endpoint                          | Descripción                                |
-| ------ | --------------------------------- | ------------------------------------------ |
-| POST   | `/team-join-requests`             | Crear solicitud                            |
-| GET    | `/team-join-requests`             | Obtener solicitudes pendientes del manager |
-| PATCH  | `/team-join-requests/:id/approve` | Aprobar solicitud                          |
-| PATCH  | `/team-join-requests/:id/reject`  | Rechazar solicitud                         |
-
-Los endpoints de tareas todavía están pendientes de implementación.
-
----
-
-## ⚙️ Instalación
-
-El proyecto está dividido en backend y frontend.
-
-Se deben ejecutar ambos servidores en terminales separadas.
-
-Asegúrate de que Docker esté iniciado y PostgreSQL esté disponible antes de ejecutar el backend.
-
-### Backend
-
-Desde la raíz del proyecto:
-
-#### 1. Instalar dependencias
-
-```bash
+📡 Endpoints principales
+Auth
+Método	Endpoint	Descripción
+GET	/ping	Health check
+POST	/auth/register	Registrar usuario
+POST	/auth/login	Iniciar sesión
+GET	/auth/me	Obtener usuario autenticado
+PUT	/auth/me	Actualizar usuario
+DELETE	/auth/me	Desactivar usuario
+Organizations
+Método	Endpoint	Descripción
+POST	/organizations	Crear Organization + Team
+GET	/organizations/:organizationId	Obtener Organization
+GET	/organizations/:organizationId/members	Obtener miembros
+Teams
+Método	Endpoint	Descripción
+GET	/teams/:teamId	Obtener Team
+GET	/teams/:teamId/members	Obtener miembros
+GET	/teams/:teamId/tasks	Obtener Tasks del Team
+DELETE	/teams/:teamId/members/me	Abandonar Team
+DELETE	/teams/:teamId/members/:userId	Expulsar miembro
+PATCH	/teams/:teamId/members/:userId/role	Actualizar rol
+PATCH	/teams/:teamId	Actualizar Team
+DELETE	/teams/:teamId	Eliminar Team
+Join Requests
+Método	Endpoint	Descripción
+POST	/team-join-requests	Crear solicitud
+GET	/team-join-requests	Obtener solicitudes pendientes
+PATCH	/team-join-requests/:id/approve	Aprobar solicitud
+PATCH	/team-join-requests/:id/reject	Rechazar solicitud
+Tasks
+Método	Endpoint	Descripción
+POST	/teams/:teamId/tasks	Crear Task
+GET	/tasks/me	Obtener Tasks del usuario
+PATCH	/tasks/:taskId/status	Actualizar estado
+⚙️ Instalación
+Requisitos
+Node.js
+Docker
+Docker Compose
+1. Clonar el repositorio
+git clone <repository-url>
+cd auth-api
+2. Instalar dependencias del backend
 npm install
-```
+3. Configurar variables de entorno
 
-#### 2. Configurar variables de entorno
+Copiar .env.example como .env:
 
-Crear un archivo `.env`:
-
-```env
 PORT=3000
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_jwt_secret_here
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/auth_api"
-```
-
-#### 3. Levantar PostgreSQL
-
-```bash
+FRONTEND_URL=http://localhost:5173
+4. Iniciar PostgreSQL
 docker compose up -d
-```
-
-#### 4. Ejecutar migraciones
-
-```bash
+5. Aplicar migraciones
 npx prisma migrate dev
-```
-
-#### 5. Iniciar la API
-
-```bash
+6. Iniciar el backend
 npm run dev
-```
 
 Backend:
 
-```text
 http://localhost:3000
-```
+7. Iniciar el frontend
 
-### Frontend
+En otra terminal:
 
-Desde la carpeta del cliente:
-
-```bash
 cd auth-client
-```
-
-#### 1. Instalar dependencias
-
-```bash
 npm install
-```
-
-#### 2. Iniciar React
-
-```bash
 npm run dev
-```
 
 Frontend:
 
-```text
 http://localhost:5173
-```
+🧰 Comandos útiles
+Backend
+npm run dev
+npm run lint
+npm run test
+Frontend
+cd auth-client
+npm run dev
+npm run lint
+npm run build
+🔄 Flujo end-to-end
 
----
+El flujo principal del producto es:
 
-## 🎨 UI / UX
-
-El frontend utiliza una interfaz SaaS moderna con:
-
-* Dark mode como tema principal.
-* Light mode alternativo.
-* Tailwind CSS.
-* Componentes reutilizables.
-* Lucide React.
-* Cards.
-* Glassmorphism.
-* Gradientes violet / purple.
-* Variables CSS.
-* Estados visuales de loading, éxito y error.
-* Diseño responsive en evolución.
-
-El tema seleccionado se guarda mediante `localStorage`.
-
-La prioridad visual es mantener una interfaz limpia, moderna y profesional sin sacrificar funcionalidad.
-
----
-
-## 🗺️ Roadmap actual
-
-El roadmap se ha actualizado respecto al planteamiento inicial. Las fases de Organization, Team y Join Requests ya están implementadas.
-
-### Fase 0 — Base técnica
-
-**Completada.**
-
-Incluye:
-
-* Auth.
-* JWT.
-* PostgreSQL.
-* Prisma.
-* Docker.
-* React.
-* Router.
-* AuthContext.
-* Profile.
-* Settings.
-* UI base.
-* Testing.
-* Protección de rutas.
-* Persistencia de sesión.
-
-### Fase 1 — Organization + Team
-
-**Completada.**
-
-Incluye:
-
-* Organization.
-* Team.
-* Manager.
-* Relación usuario ↔ Team.
-* Gestión básica de miembros.
-* Rename Team.
-* Remove Member.
-* Leave Team.
-* Delete Team.
-* Make Member.
-
-### Fase 2 — Join Requests
-
-**Completada.**
-
-Incluye:
-
-* Crear solicitudes.
-* Listar pendientes.
-* Mostrar solicitante.
-* Approve.
-* Reject.
-* Reutilización de solicitudes.
-* Integración frontend + backend.
-
-### Fase 3 — Sistema de tareas
-
-**Siguiente gran bloque del MVP.**
-
-Objetivos:
-
-#### Manager
-
-* Crear tareas.
-* Asignar tareas.
-* Consultar tareas.
-* Revisar tareas entregadas.
-* Marcar tareas como `DONE`.
-
-#### User / Member
-
-* Ver tareas asignadas.
-* Abrir tareas.
-* Empezar tareas.
-* Trabajar en tareas.
-* Entregar tareas.
-
-Estados:
-
-```text
-SENT
-  ↓
-WORKING
-  ↓
-SUBMITTED
-  ↓
-DONE
-```
-
-### Fase 4 — Dashboard funcional
-
-Una vez implementadas las tareas:
-
-* Dashboard del manager.
-* Dashboard del usuario.
-* Tareas pendientes.
-* Tareas en progreso.
-* Tareas entregadas.
-* Tareas completadas.
-* Información útil del Team.
-
-No se añadirán gráficos o estadísticas únicamente por motivos visuales.
-
-### Fase 5 — QA y cierre del MVP
-
-Antes de considerar el MVP terminado:
-
-* Validaciones frontend.
-* Validaciones backend.
-* Loading states.
-* Error handling.
-* Casos límite.
-* Tests.
-* Revisión de seguridad.
-* UX.
-* Responsive.
-* Limpieza de código.
-* Revisión del modelo de datos.
-* Documentación actualizada.
-* Demo completa end-to-end.
-
-### Prioridad
-
-No se añadirán nuevas funcionalidades grandes antes de cerrar el flujo principal:
-
-```text
-Registro
+REGISTER
    ↓
-Login
+LOGIN
    ↓
-Organization
+CREATE ORGANIZATION + TEAM
    ↓
-Team
+MANAGER
    ↓
-Join Request
+USER REQUESTS TO JOIN
    ↓
-Approve
+MANAGER APPROVES
    ↓
-Usuario dentro del Team
+USER JOINS TEAM
    ↓
-Manager crea tarea
+MANAGER CREATES TASK
    ↓
-Usuario recibe tarea
+MEMBER RECEIVES NOTIFICATION
    ↓
-Usuario trabaja
+MEMBER STARTS TASK
    ↓
-Usuario entrega
+MEMBER SUBMITS
    ↓
-Manager revisa
+MANAGER RECEIVES NOTIFICATION
+   ↓
+MANAGER COMPLETES
    ↓
 DONE
-```
+   ↓
+MEMBER RECEIVES NOTIFICATION
 
----
+Este flujo ha sido probado de extremo a extremo en la aplicación y está respaldado por la suite de integración del backend.
 
-## 🔮 Después del MVP
+🎯 Filosofía del proyecto
 
-Estas funcionalidades quedan fuera del desarrollo inmediato:
+NEO no pretende convertirse en una plataforma completa de RRHH ni en una suite empresarial.
 
-### Roles y organización
+El proyecto sigue unas reglas sencillas:
 
-* Roles adicionales.
-* Permisos avanzados.
-* Jerarquías organizativas complejas.
-* Múltiples Teams.
-* Estructuras empresariales avanzadas.
+Mantener el dominio pequeño.
+Reutilizar infraestructura antes que rehacerla.
+Mantener responsabilidades claras.
+Validar autorización en backend.
+Testear las reglas de negocio importantes.
+Priorizar utilidad sobre complejidad visual.
+Evitar funcionalidades especulativas.
+Evolucionar el producto de forma incremental.
 
-`MEMBER` se mantiene por ahora como rango intermedio disponible, pero sus permisos específicos se definirán cuando exista una necesidad real de producto.
+El objetivo no es tener el mayor número posible de funcionalidades.
 
-No se implementará actualmente un rol adicional como `General Manager`.
+El objetivo es construir una aplicación full-stack pequeña, completa, mantenible y realista.
 
-### Comunicación
+📌 Estado actual
+AUTH                 ✅
+ORGANIZATION         ✅
+TEAM                 ✅
+TEAM MANAGEMENT      ✅
+JOIN REQUESTS        ✅
+TASKS                ✅
+DASHBOARD            ✅
+NOTIFICATIONS        ✅
+TESTS                ✅ 100/100
+RESPONSIVE           ✅
+MVP FUNCIONAL        ✅
 
-* Emails.
-* Notificaciones.
-* Recordatorios.
+NEO se encuentra en la fase final de preparación para su primera release pública de portfolio.
 
-### Tareas
+👨‍💻 Sobre el proyecto
 
-* Más estados.
-* Fechas límite.
-* Prioridades.
-* Comentarios.
-* Historial avanzado.
-* Adjuntos avanzados.
+NEO es un proyecto de portfolio orientado a demostrar experiencia práctica en:
 
-### Seguridad
+diseño de APIs REST;
+autenticación y autorización;
+modelado relacional;
+PostgreSQL y Prisma;
+arquitectura de aplicaciones React;
+gestión de estado;
+componentes reutilizables;
+testing de integración;
+responsive UI/UX;
+evolución incremental de producto.
 
-* Refresh Tokens.
-* Rate Limiting.
-* Mejoras adicionales.
-
-### Documentación técnica
-
-* Swagger / OpenAPI.
-
-### DevOps
-
-* CI/CD.
-* Despliegue.
-
-Estas funcionalidades solo se priorizarán después de evaluar el MVP completo.
-
----
-
-## 📚 Documentación
-
-El proyecto mantiene dos documentos principales:
-
-### `README.md`
-
-Documento orientado a:
-
-* Concepto del producto.
-* Funcionalidades.
-* Arquitectura general.
-* Instalación.
-* Ejecución.
-* Endpoints.
-* Estado actual.
-* Roadmap.
-
-### `PROJECT_GUIDE.md`
-
-Documento técnico orientado a:
-
-* Contexto detallado.
-* Convenciones del proyecto.
-* Arquitectura.
-* Decisiones técnicas.
-* Estado de desarrollo.
-* Próximos objetivos.
-* Guía para continuar el desarrollo en futuras sesiones.
-
-La documentación se actualiza al cerrar bloques importantes de trabajo, evitando regenerarla después de cada pequeña modificación.
-
----
-
-# 🔥 Estado actual
-
-NEO ya no es únicamente una API de autenticación.
-
-Actualmente dispone de una base full-stack funcional que incluye:
-
-* Autenticación JWT.
-* Registro y login.
-* Logout.
-* Persistencia y rehidratación de sesión.
-* Rutas protegidas.
-* PostgreSQL.
-* Prisma.
-* Docker.
-* Tests de integración.
-* Profile.
-* Settings.
-* AppLayout.
-* Sidebar.
-* Header.
-* Dark / Light mode persistente.
-* Organizations.
-* Teams.
-* Managers.
-* Users.
-* `MEMBER`.
-* Gestión de miembros.
-* Leave Team.
-* Rejoin Team.
-* Rename Team.
-* Make Member.
-* Remove Member.
-* Delete Team.
-* Join Requests.
-* Approve.
-* Reject.
-* Reutilización de solicitudes.
-* Página específica de Join Requests para managers.
-* Base de datos de testing aislada.
-* Suite de integración con 85 tests pasando.
-
-El proyecto se encuentra actualmente en transición hacia la siguiente gran funcionalidad del MVP:
-
-> **Sistema de tareas y flujo completo de trabajo entre manager y usuarios.**
-
-La prioridad sigue siendo avanzar hacia un MVP funcional, reutilizando la arquitectura existente y evitando refactorizaciones o jerarquías innecesarias.
-
----
-
-**Próximo objetivo: implementar el sistema de tareas.**
+El proyecto está construido como una aplicación real con reglas de negocio, persistencia, autorización y testing, en lugar de como una colección de ejercicios técnicos independientes.
