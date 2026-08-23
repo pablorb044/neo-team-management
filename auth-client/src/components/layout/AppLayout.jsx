@@ -6,7 +6,9 @@ import {
   Search,
   Bell,
   Mail,
-  CheckSquare
+  CheckSquare,
+  Menu,
+  X
 } from 'lucide-react'
 
 import { useNavigate } from 'react-router-dom'
@@ -25,13 +27,14 @@ function AppLayout({ children }) {
   } = useNotifications()
 
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const notificationsRef = useRef(null)
 
   const displayName = user?.username || 'User'
   const avatarLetter = displayName.charAt(0).toUpperCase()
 
-const recentNotifications = notifications.slice(0, 5)
+  const recentNotifications = notifications.slice(0, 5)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -46,44 +49,55 @@ const recentNotifications = notifications.slice(0, 5)
     document.addEventListener('mousedown', handleClickOutside)
 
     return () => {
-      document.removeEventListener(
-        'mousedown',
-        handleClickOutside
-      )
+      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
 
-const handleNotificationClick = async (notification) => {
-  if (!notification.read) {
-    await markAsRead(notification.id)
+  const handleNavigation = (path) => {
+    setMobileMenuOpen(false)
+    setNotificationsOpen(false)
+    navigate(path)
   }
 
-  setNotificationsOpen(false)
-  navigate('/tasks')
-}
+  const handleNotificationClick = async (notification) => {
+    if (!notification.read) {
+      await markAsRead(notification.id)
+    }
+
+    setNotificationsOpen(false)
+    navigate('/tasks')
+  }
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead()
   }
 
+  const handleLogout = () => {
+    setMobileMenuOpen(false)
+    logout()
+    navigate('/login')
+  }
+
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+
+      {/* Desktop sidebar */}
 
       <aside
         className="
           fixed
           inset-y-0
           left-0
-          flex
+          z-40
+          hidden
           w-64
           flex-col
           border-r
           border-white/10
           bg-[var(--bg-secondary)]
+          md:flex
         "
       >
-
-        {/* Logo */}
 
         <div className="p-6">
           <h1 className="text-xl font-semibold">
@@ -91,13 +105,10 @@ const handleNotificationClick = async (notification) => {
           </h1>
         </div>
 
-
-        {/* Navigation */}
-
         <nav className="flex-1 px-4">
 
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => handleNavigation('/dashboard')}
             className="
               flex
               w-full
@@ -121,7 +132,7 @@ const handleNotificationClick = async (notification) => {
           </button>
 
           <button
-            onClick={() => navigate('/tasks')}
+            onClick={() => handleNavigation('/tasks')}
             className="
               mt-2
               flex
@@ -143,7 +154,7 @@ const handleNotificationClick = async (notification) => {
           </button>
 
           <button
-            onClick={() => navigate('/team')}
+            onClick={() => handleNavigation('/team')}
             className="
               mt-2
               flex
@@ -166,7 +177,7 @@ const handleNotificationClick = async (notification) => {
 
           {user?.role === 'manager' && (
             <button
-              onClick={() => navigate('/join-requests')}
+              onClick={() => handleNavigation('/join-requests')}
               className="
                 mt-2
                 flex
@@ -189,7 +200,7 @@ const handleNotificationClick = async (notification) => {
           )}
 
           <button
-            onClick={() => navigate('/organization')}
+            onClick={() => handleNavigation('/organization')}
             className="
               mt-2
               flex
@@ -212,13 +223,10 @@ const handleNotificationClick = async (notification) => {
 
         </nav>
 
-
-        {/* Bottom navigation */}
-
         <div className="space-y-2 border-t border-white/10 p-4">
 
           <button
-            onClick={() => navigate('/settings')}
+            onClick={() => handleNavigation('/settings')}
             className="
               flex
               w-full
@@ -239,10 +247,7 @@ const handleNotificationClick = async (notification) => {
           </button>
 
           <button
-            onClick={() => {
-              logout()
-              navigate('/login')
-            }}
+            onClick={handleLogout}
             className="
               flex
               w-full
@@ -267,67 +272,306 @@ const handleNotificationClick = async (notification) => {
       </aside>
 
 
+      {/* Mobile menu overlay */}
+
+      {mobileMenuOpen && (
+        <div
+          className="
+            fixed
+            inset-0
+            z-[60]
+            bg-black/60
+            backdrop-blur-sm
+            md:hidden
+          "
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <aside
+            className="
+              flex
+              h-full
+              w-[min(20rem,85vw)]
+              flex-col
+              border-r
+              border-white/10
+              bg-[var(--bg-secondary)]
+              shadow-2xl
+            "
+            onClick={(event) => event.stopPropagation()}
+          >
+
+            <div className="flex items-center justify-between border-b border-white/10 p-5">
+              <h1 className="text-xl font-semibold">
+                NEO
+              </h1>
+
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="
+                  rounded-lg
+                  p-2
+                  text-[var(--text-secondary)]
+                  transition
+                  hover:bg-white/5
+                  hover:text-[var(--text-primary)]
+                "
+                aria-label="Close menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <nav className="flex-1 px-4 py-5">
+
+              <button
+                onClick={() => handleNavigation('/dashboard')}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  bg-gradient-to-r
+                  from-violet-600/80
+                  to-purple-600/80
+                  px-4
+                  py-3
+                  text-sm
+                  font-medium
+                  text-[var(--text-primary)]
+                  shadow-lg
+                  shadow-violet-900/20
+                "
+              >
+                <User size={18} />
+                Dashboard
+              </button>
+
+              <button
+                onClick={() => handleNavigation('/tasks')}
+                className="
+                  mt-2
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  text-[var(--text-secondary)]
+                  transition
+                  hover:bg-white/5
+                  hover:text-[var(--text-primary)]
+                "
+              >
+                <CheckSquare size={18} />
+                Tasks
+              </button>
+
+              <button
+                onClick={() => handleNavigation('/team')}
+                className="
+                  mt-2
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  text-[var(--text-secondary)]
+                  transition
+                  hover:bg-white/5
+                  hover:text-[var(--text-primary)]
+                "
+              >
+                <User size={18} />
+                Team
+              </button>
+
+              {user?.role === 'manager' && (
+                <button
+                  onClick={() => handleNavigation('/join-requests')}
+                  className="
+                    mt-2
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-4
+                    py-3
+                    text-sm
+                    text-[var(--text-secondary)]
+                    transition
+                    hover:bg-white/5
+                    hover:text-[var(--text-primary)]
+                  "
+                >
+                  <Mail size={18} />
+                  Join Requests
+                </button>
+              )}
+
+              <button
+                onClick={() => handleNavigation('/organization')}
+                className="
+                  mt-2
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  text-[var(--text-secondary)]
+                  transition
+                  hover:bg-white/5
+                  hover:text-[var(--text-primary)]
+                "
+              >
+                <User size={18} />
+                Organization
+              </button>
+
+            </nav>
+
+            <div className="space-y-2 border-t border-white/10 p-4">
+
+              <button
+                onClick={() => handleNavigation('/settings')}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  text-[var(--text-secondary)]
+                  transition
+                  hover:bg-white/5
+                  hover:text-[var(--text-primary)]
+                "
+              >
+                <Settings size={18} />
+                Settings
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  text-[var(--text-secondary)]
+                  transition
+                  hover:bg-white/5
+                  hover:text-[var(--text-primary)]
+                "
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+
+            </div>
+
+          </aside>
+        </div>
+      )}
+
+
       {/* Main area */}
 
-      <div className="min-h-screen pl-64">
+      <div className="min-h-screen md:pl-64">
 
         {/* Header */}
 
-          <header
-            className="
-              relative
-              z-50
-              flex
-              h-16
-              items-center
-              justify-between
-              border-b
-              border-white/10
-              bg-[var(--bg-primary)]
-              px-8
-              backdrop-blur-xl
-            "
-          >
+        <header
+          className="
+            relative
+            z-50
+            flex
+            h-16
+            items-center
+            justify-between
+            border-b
+            border-white/10
+            bg-[var(--bg-primary)]
+            px-4
+            backdrop-blur-xl
+            sm:px-6
+            md:px-8
+          "
+        >
 
-          {/* Search */}
+          <div className="flex min-w-0 items-center gap-3">
 
-          <div
-            className="
-              flex
-              w-72
-              items-center
-              gap-3
-              rounded-xl
-              border
-              border-white/10
-              bg-white/5
-              px-4
-              py-2
-            "
-          >
-            <Search
-              size={17}
-              className="text-[var(--text-secondary)]"
-            />
-
-            <input
-              type="text"
-              placeholder="Search..."
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
               className="
-                w-full
-                bg-transparent
-                text-sm
-                text-[var(--text-primary)]
-                outline-none
-                placeholder:text-[var(--text-secondary)]
+                rounded-lg
+                p-2
+                text-[var(--text-secondary)]
+                transition
+                hover:bg-white/5
+                hover:text-[var(--text-primary)]
+                md:hidden
               "
-            />
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
+            </button>
+
+            <div
+              className="
+                hidden
+                w-72
+                items-center
+                gap-3
+                rounded-xl
+                border
+                border-white/10
+                bg-white/5
+                px-4
+                py-2
+                sm:flex
+              "
+            >
+              <Search
+                size={17}
+                className="text-[var(--text-secondary)]"
+              />
+
+              <input
+                type="text"
+                placeholder="Search..."
+                className="
+                  w-full
+                  bg-transparent
+                  text-sm
+                  text-[var(--text-primary)]
+                  outline-none
+                  placeholder:text-[var(--text-secondary)]
+                "
+              />
+            </div>
+
           </div>
 
 
-          {/* Header actions */}
-
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
 
             {/* Notifications */}
 
@@ -386,27 +630,33 @@ const handleNotificationClick = async (notification) => {
               {notificationsOpen && (
                 <div
                   className="
-                    absolute
-                    right-0
-                    top-12
-                    z-50
-                    w-96
-                    overflow-hidden
-                    rounded-xl
-                    border
-                    border-white/10
-                    bg-[var(--bg-secondary)]
-                    shadow-2xl
-                  "
-                >
-
-                  {/* Notifications header */}
+                        fixed
+                        left-2
+                        right-2
+                        top-20
+                        z-50
+                        max-h-[calc(100vh-6rem)]
+                        overflow-hidden
+                        rounded-xl
+                        border
+                        border-white/10
+                        bg-[var(--bg-secondary)]
+                        shadow-2xl
+                        sm:absolute
+                        sm:left-auto
+                        sm:right-0
+                        sm:top-12
+                        sm:w-96
+                        sm:max-h-none
+                        "
+                  >
 
                   <div
                     className="
                       flex
                       items-center
                       justify-between
+                      gap-4
                       border-b
                       border-white/10
                       px-4
@@ -430,6 +680,7 @@ const handleNotificationClick = async (notification) => {
                         type="button"
                         onClick={handleMarkAllAsRead}
                         className="
+                          shrink-0
                           text-xs
                           text-violet-300
                           transition
@@ -440,9 +691,6 @@ const handleNotificationClick = async (notification) => {
                       </button>
                     )}
                   </div>
-
-
-                  {/* Notifications list */}
 
                   <div className="max-h-[420px] overflow-y-auto">
 
@@ -501,6 +749,7 @@ const handleNotificationClick = async (notification) => {
 
                             <p
                               className={`
+                                break-words
                                 text-sm
                                 ${
                                   notification.read
@@ -537,13 +786,15 @@ const handleNotificationClick = async (notification) => {
               className="
                 flex
                 items-center
-                gap-3
+                gap-2
                 rounded-xl
                 border
                 border-white/10
                 bg-white/5
-                px-3
+                px-2
                 py-2
+                sm:gap-3
+                sm:px-3
               "
             >
 
@@ -552,6 +803,7 @@ const handleNotificationClick = async (notification) => {
                   flex
                   h-8
                   w-8
+                  shrink-0
                   items-center
                   justify-center
                   rounded-full
@@ -565,7 +817,7 @@ const handleNotificationClick = async (notification) => {
                 {avatarLetter}
               </div>
 
-              <span className="text-sm text-[var(--text-secondary)]">
+              <span className="hidden max-w-32 truncate text-sm text-[var(--text-secondary)] sm:block">
                 {displayName}
               </span>
 
@@ -578,7 +830,7 @@ const handleNotificationClick = async (notification) => {
 
         {/* Page content */}
 
-        <main className="p-8">
+        <main className="p-4 sm:p-6 md:p-8">
           {children}
         </main>
 
