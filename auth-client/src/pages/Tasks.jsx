@@ -26,6 +26,8 @@ function Tasks() {
   const [creating, setCreating] = useState(false)
   const [formError, setFormError] = useState('')
 
+  const [completedVisible, setCompletedVisible] = useState(5)
+
   useEffect(() => {
     const loadMembers = async () => {
       if (user?.role !== 'manager' || !user?.teamId) {
@@ -160,6 +162,19 @@ function Tasks() {
         }
     }
   }
+
+  const activeTasks = tasks.filter(
+    task => task.status !== 'DONE'
+  )
+
+  const completedTasks = tasks.filter(
+    task => task.status === 'DONE'
+  )
+
+  const visibleCompletedTasks = completedTasks.slice(
+    0,
+    completedVisible
+  )
 
   return (
     <AppLayout>
@@ -333,127 +348,282 @@ function Tasks() {
         )}
 
         {loading ? (
-          <div className="flex min-h-[300px] items-center justify-center">
+  <div className="flex min-h-[300px] items-center justify-center">
+    <p className="text-sm text-[var(--text-secondary)]">
+      Loading tasks...
+    </p>
+  </div>
+) : tasks.length === 0 ? (
+  <Card>
+    <p className="text-sm text-[var(--text-secondary)]">
+      No tasks found.
+    </p>
+  </Card>
+) : (
+  <div className="space-y-8">
+
+    {activeTasks.length > 0 && (
+      <section className="space-y-4">
+
+        <div className="flex items-end justify-between gap-4">
+          <div>
             <p className="text-sm text-[var(--text-secondary)]">
-              Loading tasks...
+              Current work
             </p>
+
+            <h2 className="mt-1 text-xl font-semibold">
+              Active Tasks
+            </h2>
           </div>
-        ) : tasks.length === 0 ? (
-          <Card>
-            <p className="text-sm text-[var(--text-secondary)]">
-              No tasks found.
-            </p>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {tasks.map(task => {
-              const nextAction = getNextAction(task)
-              const statusStyle = getStatusStyle(task.status)
 
-              return (
-                <Card key={task.id}>
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <span className="text-sm text-[var(--text-secondary)]">
+            {activeTasks.length}
+          </span>
+        </div>
 
-                    <div className="space-y-3">
+        <div className="space-y-4">
+          {activeTasks.map(task => {
+            const nextAction = getNextAction(task)
+            const statusStyle = getStatusStyle(task.status)
 
-                      <div>
-                        <h2 className="text-lg font-semibold">
-                          {task.title}
-                        </h2>
+            return (
+              <Card key={task.id}>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
-                        {task.description && (
-                          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                            {task.description}
-                          </p>
-                        )}
+                  <div className="space-y-3">
+
+                    <div>
+                      <h2 className="text-lg font-semibold">
+                        {task.title}
+                      </h2>
+
+                      {task.description && (
+                        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                          {task.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-sm">
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--text-secondary)]">
+                          Status:
+                        </span>
+
+                        <span
+                          className={`
+                            rounded-full
+                            border
+                            px-2.5
+                            py-1
+                            text-xs
+                            font-medium
+                            ${statusStyle.className}
+                          `}
+                        >
+                          {statusStyle.label}
+                        </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-4 text-sm">
-
-                        <div className="flex items-center gap-2">
+                      {user?.role === 'manager' && (
+                        <p>
                           <span className="text-[var(--text-secondary)]">
-                            Status:
-                          </span>
+                            Assigned to:
+                          </span>{' '}
+                          {task.assignedTo?.username || 'Unknown'}
+                        </p>
+                      )}
 
-                          <span
-                            className={`
-                              rounded-full
-                              border
-                              px-2.5
-                              py-1
-                              text-xs
-                              font-medium
-                              ${statusStyle.className}
-                            `}
-                          >
-                            {statusStyle.label}
-                          </span>
-                        </div>
-
-                        {user?.role === 'manager' && (
-                          <p>
-                            <span className="text-[var(--text-secondary)]">
-                              Assigned to:
-                            </span>{' '}
-                            {task.assignedTo?.username || 'Unknown'}
-                          </p>
-                        )}
-
-                        {task.team && (
-                          <p>
-                            <span className="text-[var(--text-secondary)]">
-                              Team:
-                            </span>{' '}
-                            {task.team.name}
-                          </p>
-                        )}
-
-                      </div>
-
-                      {user?.role === 'manager' &&
-                        task.status === 'SUBMITTED' && (
-                          <p className="text-xs font-medium text-yellow-300">
-                            This task is waiting for your review.
-                          </p>
-                        )}
+                      {task.team && (
+                        <p>
+                          <span className="text-[var(--text-secondary)]">
+                            Team:
+                          </span>{' '}
+                          {task.team.name}
+                        </p>
+                      )}
 
                     </div>
 
-                    {nextAction && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleStatusChange(
-                            task.id,
-                            nextAction.status
-                          )
-                        }
-                        className="
-                          rounded-lg
-                          bg-gradient-to-r
-                          from-violet-600/80
-                          to-purple-600/80
-                          px-4
-                          py-2
-                          text-sm
-                          font-medium
-                          text-[var(--text-primary)]
-                          shadow-lg
-                          shadow-violet-900/20
-                          transition
-                          hover:opacity-90
-                        "
-                      >
-                        {nextAction.label}
-                      </button>
-                    )}
+                    {user?.role === 'manager' &&
+                      task.status === 'SUBMITTED' && (
+                        <p className="text-xs font-medium text-yellow-300">
+                          This task is waiting for your review.
+                        </p>
+                      )}
 
                   </div>
-                </Card>
-              )
-            })}
+
+                  {nextAction && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleStatusChange(
+                          task.id,
+                          nextAction.status
+                        )
+                      }
+                      className="
+                        rounded-lg
+                        bg-gradient-to-r
+                        from-violet-600/80
+                        to-purple-600/80
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-[var(--text-primary)]
+                        shadow-lg
+                        shadow-violet-900/20
+                        transition
+                        hover:opacity-90
+                      "
+                    >
+                      {nextAction.label}
+                    </button>
+                  )}
+
+                </div>
+              </Card>
+            )
+          })}
+        </div>
+
+      </section>
+    )}
+
+    {completedTasks.length > 0 && (
+      <section className="space-y-4">
+
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Finished work
+            </p>
+
+            <h2 className="mt-1 text-xl font-semibold">
+              Completed
+            </h2>
+          </div>
+
+          <span className="text-sm text-[var(--text-secondary)]">
+            {completedTasks.length}
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          {visibleCompletedTasks.map(task => {
+            const statusStyle = getStatusStyle(task.status)
+
+            return (
+              <Card key={task.id}>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
+                  <div className="space-y-2">
+
+                    <h2 className="text-lg font-semibold">
+                      {task.title}
+                    </h2>
+
+                    {task.description && (
+                      <p className="text-sm text-[var(--text-secondary)]">
+                        {task.description}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-4 text-sm">
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--text-secondary)]">
+                          Status:
+                        </span>
+
+                        <span
+                          className={`
+                            rounded-full
+                            border
+                            px-2.5
+                            py-1
+                            text-xs
+                            font-medium
+                            ${statusStyle.className}
+                          `}
+                        >
+                          {statusStyle.label}
+                        </span>
+                      </div>
+
+                      {user?.role === 'manager' && (
+                        <p>
+                          <span className="text-[var(--text-secondary)]">
+                            Assigned to:
+                          </span>{' '}
+                          {task.assignedTo?.username || 'Unknown'}
+                        </p>
+                      )}
+
+                      {task.team && (
+                        <p>
+                          <span className="text-[var(--text-secondary)]">
+                            Team:
+                          </span>{' '}
+                          {task.team.name}
+                        </p>
+                      )}
+
+                    </div>
+
+                  </div>
+
+                </div>
+              </Card>
+            )
+          })}
+        </div>
+
+        {completedVisible < completedTasks.length && (
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={() =>
+                setCompletedVisible(
+                  current => current + 5
+                )
+              }
+              className="
+                rounded-xl
+                border
+                border-white/10
+                bg-white/5
+                px-4
+                py-2
+                text-sm
+                font-medium
+                text-[var(--text-secondary)]
+                transition
+                hover:bg-white/10
+                hover:text-[var(--text-primary)]
+              "
+            >
+              Show more
+            </button>
           </div>
         )}
+
+      </section>
+    )}
+
+    {activeTasks.length === 0 && completedTasks.length === 0 && (
+      <Card>
+        <p className="text-sm text-[var(--text-secondary)]">
+          No tasks found.
+        </p>
+      </Card>
+    )}
+
+  </div>
+)}
 
       </div>
     </AppLayout>
