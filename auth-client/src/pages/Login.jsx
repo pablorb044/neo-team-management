@@ -65,6 +65,16 @@ function Login() {
         error={error}
         onSubmit={handleSubmit}
       >
+        <div className="mt-4 text-center text-sm text-[var(--text-secondary)]">
+          Don't have an account?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+            className="font-medium text-violet-300 transition hover:text-violet-200"
+          >
+            Create one
+          </button>
+        </div>
         <Input
           type="email"
           placeholder="Email"

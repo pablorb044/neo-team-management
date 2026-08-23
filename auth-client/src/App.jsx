@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicRoute from './components/auth/PublicRoute'
 import Login from './pages/Login'
@@ -9,6 +9,7 @@ import Team from './pages/Team'
 import Organization from './pages/Organization'
 import JoinRequests from './pages/JoinRequests'
 import Tasks from './pages/Tasks'
+import Landing from './pages/Landing'
 
 function App() {
   return (
@@ -17,7 +18,11 @@ function App() {
 
         <Route
           path="/"
-          element={<Navigate to="/dashboard" replace />}
+          element={
+            <PublicRoute>
+              <Landing />
+            </PublicRoute>
+          }
         />
 
         <Route
