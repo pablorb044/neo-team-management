@@ -5,7 +5,6 @@ import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
 import { useDashboard } from '../hooks/useDashboard'
 import { createOrganization } from '../services/organization.api'
-import { createTeamJoinRequest } from '../services/team-join-request.api'
 
 function Organization() {
   const { user, updateUser } = useAuth()
@@ -22,11 +21,6 @@ function Organization() {
   const [creatingOrganization, setCreatingOrganization] = useState(false)
   const [organizationSuccess, setOrganizationSuccess] = useState('')
   const [organizationError, setOrganizationError] = useState('')
-
-  const [teamId, setTeamId] = useState('')
-  const [requesting, setRequesting] = useState(false)
-  const [requestSuccess, setRequestSuccess] = useState('')
-  const [requestError, setRequestError] = useState('')
 
   const handleCreateOrganization = async (event) => {
     event.preventDefault()
@@ -68,34 +62,6 @@ function Organization() {
       )
     } finally {
       setCreatingOrganization(false)
-    }
-  }
-
-  const handleJoinRequest = async (event) => {
-    event.preventDefault()
-
-    if (requesting || !teamId.trim()) {
-      return
-    }
-
-    try {
-      setRequesting(true)
-      setRequestSuccess('')
-      setRequestError('')
-
-      await createTeamJoinRequest(teamId.trim())
-
-      setTeamId('')
-      setRequestSuccess(
-        'Join request sent successfully. Wait for the team manager to approve it.'
-      )
-    } catch (error) {
-      setRequestError(
-        error.response?.data?.error ||
-        'Error sending join request'
-      )
-    } finally {
-      setRequesting(false)
     }
   }
 
@@ -152,159 +118,55 @@ function Organization() {
             </div>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <form
+              onSubmit={handleCreateOrganization}
+              className="space-y-5"
+            >
+              <div>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  New workspace
+                </p>
 
-            <Card>
-              <form
-                onSubmit={handleCreateOrganization}
-                className="space-y-5"
-              >
-                <div>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    New workspace
-                  </p>
+                <h2 className="mt-1 text-xl font-semibold">
+                  Create Organization
+                </h2>
 
-                  <h2 className="mt-1 text-xl font-semibold">
-                    Create Organization
-                  </h2>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                  Create a new organization and Team. You will
+                  automatically become the Team manager.
+                </p>
+              </div>
 
-                  <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                    Create a new organization and Team. You will
-                    automatically become the Team manager.
-                  </p>
-                </div>
+              {organizationError && (
+                <p className="text-sm text-red-400">
+                  {organizationError}
+                </p>
+              )}
 
-                {organizationError && (
-                  <p className="text-sm text-red-400">
-                    {organizationError}
-                  </p>
-                )}
+              {organizationSuccess && (
+                <p className="text-sm text-green-400">
+                  {organizationSuccess}
+                </p>
+              )}
 
-                {organizationSuccess && (
-                  <p className="text-sm text-green-400">
-                    {organizationSuccess}
-                  </p>
-                )}
-
-                <div className="space-y-3">
-
-                  <div>
-                    <label className="mb-2 block text-sm">
-                      Organization name
-                    </label>
-
-                    <input
-                      type="text"
-                      value={organizationName}
-                      onChange={(event) => {
-                        setOrganizationName(event.target.value)
-                        setOrganizationError('')
-                        setOrganizationSuccess('')
-                      }}
-                      placeholder="Organization name"
-                      minLength={2}
-                      required
-                      className="
-                        w-full
-                        rounded-xl
-                        border
-                        border-white/10
-                        bg-white/5
-                        px-4
-                        py-3
-                        text-sm
-                        text-[var(--text-primary)]
-                        outline-none
-                        transition
-                        focus:border-violet-500/50
-                        focus:bg-white/10
-                      "
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm">
-                      Team name
-                    </label>
-
-                    <input
-                      type="text"
-                      value={teamName}
-                      onChange={(event) => {
-                        setTeamName(event.target.value)
-                        setOrganizationError('')
-                        setOrganizationSuccess('')
-                      }}
-                      placeholder="Team name"
-                      minLength={2}
-                      required
-                      className="
-                        w-full
-                        rounded-xl
-                        border
-                        border-white/10
-                        bg-white/5
-                        px-4
-                        py-3
-                        text-sm
-                        text-[var(--text-primary)]
-                        outline-none
-                        transition
-                        focus:border-violet-500/50
-                        focus:bg-white/10
-                      "
-                    />
-                  </div>
-
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={
-                    creatingOrganization ||
-                    !organizationName.trim() ||
-                    !teamName.trim()
-                  }
-                  className="w-auto"
-                >
-                  {creatingOrganization
-                    ? 'Creating...'
-                    : 'Create Organization'}
-                </Button>
-              </form>
-            </Card>
-
-            <Card>
-              <div className="space-y-5">
+              <div className="space-y-3">
 
                 <div>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    Existing Team
-                  </p>
+                  <label className="mb-2 block text-sm">
+                    Organization name
+                  </label>
 
-                  <h2 className="mt-1 text-xl font-semibold">
-                    Join a Team
-                  </h2>
-
-                  <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                    Enter the Team ID provided by the team manager to
-                    request access.
-                  </p>
-                </div>
-
-                <form
-                  onSubmit={handleJoinRequest}
-                  className="space-y-3"
-                >
                   <input
                     type="text"
-                    value={teamId}
+                    value={organizationName}
                     onChange={(event) => {
-                      setTeamId(event.target.value)
-                      setRequestError('')
-                      setRequestSuccess('')
+                      setOrganizationName(event.target.value)
+                      setOrganizationError('')
+                      setOrganizationSuccess('')
                     }}
-                    placeholder="Enter Team ID"
+                    placeholder="Organization name"
+                    minLength={2}
                     required
                     className="
                       w-full
@@ -322,34 +184,59 @@ function Organization() {
                       focus:bg-white/10
                     "
                   />
+                </div>
 
-                  <Button
-                    type="submit"
-                    disabled={requesting || !teamId.trim()}
-                    className="w-auto"
-                  >
-                    {requesting
-                      ? 'Sending request...'
-                      : 'Request to join'}
-                  </Button>
-                </form>
+                <div>
+                  <label className="mb-2 block text-sm">
+                    Team name
+                  </label>
 
-                {requestSuccess && (
-                  <p className="text-sm text-green-400">
-                    {requestSuccess}
-                  </p>
-                )}
-
-                {requestError && (
-                  <p className="text-sm text-red-400">
-                    {requestError}
-                  </p>
-                )}
+                  <input
+                    type="text"
+                    value={teamName}
+                    onChange={(event) => {
+                      setTeamName(event.target.value)
+                      setOrganizationError('')
+                      setOrganizationSuccess('')
+                    }}
+                    placeholder="Team name"
+                    minLength={2}
+                    required
+                    className="
+                      w-full
+                      rounded-xl
+                      border
+                      border-white/10
+                      bg-white/5
+                      px-4
+                      py-3
+                      text-sm
+                      text-[var(--text-primary)]
+                      outline-none
+                      transition
+                      focus:border-violet-500/50
+                      focus:bg-white/10
+                    "
+                  />
+                </div>
 
               </div>
-            </Card>
 
-          </div>
+              <Button
+                type="submit"
+                disabled={
+                  creatingOrganization ||
+                  !organizationName.trim() ||
+                  !teamName.trim()
+                }
+                className="w-auto"
+              >
+                {creatingOrganization
+                  ? 'Creating...'
+                  : 'Create Organization'}
+              </Button>
+            </form>
+          </Card>
         )}
 
         {team && (

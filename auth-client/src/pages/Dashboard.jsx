@@ -2,6 +2,7 @@ import { useState } from 'react'
 import AppLayout from '../components/layout/AppLayout'
 import Card from '../components/ui/Card'
 import { useDashboard } from '../hooks/useDashboard'
+import { Link } from 'react-router-dom'
 
 function Dashboard() {
   const {
@@ -71,6 +72,71 @@ function Dashboard() {
             <p className="text-sm text-red-400">
               {error}
             </p>
+          </Card>
+        )}
+
+        {!team && (
+          <Card>
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Get started
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold">
+                  No Team yet
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm text-[var(--text-secondary)]">
+                  Create your own organization or join an existing team
+                  to start receiving tasks.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/organization"
+                  className="
+                    inline-flex
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-violet-500
+                    px-4
+                    py-3
+                    text-sm
+                    font-medium
+                    text-white
+                    transition
+                    hover:bg-violet-400
+                  "
+                >
+                  Create Organization
+                </Link>
+
+                <Link
+                  to="/team"
+                  className="
+                    inline-flex
+                    items-center
+                    justify-center
+                    rounded-xl
+                    border
+                    border-white/10
+                    bg-white/5
+                    px-4
+                    py-3
+                    text-sm
+                    font-medium
+                    text-[var(--text-primary)]
+                    transition
+                    hover:bg-white/10
+                  "
+                >
+                  Join a Team
+                </Link>
+              </div>
+            </div>
           </Card>
         )}
 

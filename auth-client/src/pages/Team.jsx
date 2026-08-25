@@ -10,6 +10,7 @@ import {
   updateTeamMemberRole
 } from '../services/team.api'
 import { useEffect, useState } from 'react'
+import { createTeamJoinRequest } from '../services/team-join-request.api'
 import Button from '../components/ui/Button'
 
 function Team() {
@@ -38,6 +39,10 @@ function Team() {
   const [deletingTeam, setDeletingTeam] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [teamId, setTeamId] = useState('')
+  const [requesting, setRequesting] = useState(false)
+  const [requestSuccess, setRequestSuccess] = useState('')
+  const [requestError, setRequestError] = useState('')
 
   useEffect(() => {
     if (!team?.id) {
@@ -216,6 +221,34 @@ function Team() {
     }
   }
 
+  const handleJoinRequest = async (event) => {
+  event.preventDefault()
+
+  if (requesting || !teamId.trim()) {
+    return
+  }
+
+  try {
+    setRequesting(true)
+    setRequestSuccess('')
+    setRequestError('')
+
+    await createTeamJoinRequest(teamId.trim())
+
+    setTeamId('')
+    setRequestSuccess(
+      'Join request sent successfully. Wait for the team manager to approve it.'
+    )
+  } catch (error) {
+    setRequestError(
+      error.response?.data?.error ||
+      'Error sending join request'
+    )
+  } finally {
+    setRequesting(false)
+  }
+  }
+
   return (
     <AppLayout>
       <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -248,9 +281,73 @@ function Team() {
 
         {!team ? (
           <Card>
-            <p className="text-[var(--text-secondary)]">
-              You are not currently a member of a Team.
-            </p>
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Existing Team
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold">
+                  Join a Team
+                </h2>
+
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                  Enter the Team ID provided by the team manager to request access.
+                </p>
+              </div>
+
+              <form
+                onSubmit={handleJoinRequest}
+                className="space-y-3"
+              >
+                <input
+                  type="text"
+                  value={teamId}
+                  onChange={(event) => {
+                    setTeamId(event.target.value)
+                    setRequestError('')
+                    setRequestSuccess('')
+                  }}
+                  placeholder="Enter Team ID"
+                  required
+                  className="
+                    w-full
+                    rounded-xl
+                    border
+                    border-white/10
+                    bg-white/5
+                    px-4
+                    py-3
+                    text-sm
+                    text-[var(--text-primary)]
+                    outline-none
+                    transition
+                    focus:border-violet-500/50
+                    focus:bg-white/10
+                  "
+                />
+
+                <Button
+                  type="submit"
+                  disabled={requesting || !teamId.trim()}
+                  className="w-auto"
+                >
+                  {requesting ? 'Sending request...' : 'Request to join'}
+                </Button>
+              </form>
+
+              {requestSuccess && (
+                <p className="text-sm text-green-400">
+                  {requestSuccess}
+                </p>
+              )}
+
+              {requestError && (
+                <p className="text-sm text-red-400">
+                  {requestError}
+                </p>
+              )}
+            </div>
           </Card>
         ) : (
           <>
