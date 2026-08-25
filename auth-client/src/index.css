@@ -9,12 +9,39 @@
 }
 
 html.light {
-  --bg-primary: #e8e9ed;
-  --bg-secondary: #dfe1e6;
-  --bg-card: #f1f2f4;
+  --bg-primary: #f6f7fb;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
   --text-primary: #18181b;
-  --text-secondary: #5f636d;
-  --border: rgba(24, 24, 27, 0.10);
+  --text-secondary: #626875;
+  --border: rgba(24, 24, 27, 0.12);
+}
+html.light .bg-white\/5 {
+  background-color: rgba(24, 24, 27, 0.04);
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(24, 24, 27, 0.07);
+}
+
+html.light .bg-white\/\[0\.03\] {
+  background-color: rgba(24, 24, 27, 0.025);
+}
+
+html.light .border-white\/10 {
+  border-color: rgba(24, 24, 27, 0.12);
+}
+
+html.light .border-white\/5 {
+  border-color: rgba(24, 24, 27, 0.08);
+}
+
+html.light .hover\:bg-white\/5:hover {
+  background-color: rgba(24, 24, 27, 0.06);
+}
+
+html.light .hover\:bg-white\/10:hover {
+  background-color: rgba(24, 24, 27, 0.09);
 }
 body { 
      background-color: var(--bg-primary);

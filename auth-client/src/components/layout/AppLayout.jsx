@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   User,
-  Settings,
+  Sun,
+  Moon,
   LogOut,
-  Search,
   Bell,
   Mail,
   CheckSquare,
@@ -14,10 +14,12 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
+import { useTheme } from '../../hooks/useTheme'
 
 function AppLayout({ children }) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
 
   const {
     notifications,
@@ -65,7 +67,20 @@ function AppLayout({ children }) {
     }
 
     setNotificationsOpen(false)
-    navigate('/tasks')
+
+    const teamNotificationTypes = [
+      'TEAM_JOIN_REQUEST',
+      'TEAM_JOIN_APPROVED',
+      'TEAM_JOIN_REJECTED'
+    ]
+
+    const destination = teamNotificationTypes.includes(
+      notification.type
+    )
+      ? '/team'
+      : '/tasks'
+
+    navigate(destination)
   }
 
   const handleMarkAllAsRead = async () => {
@@ -226,7 +241,8 @@ function AppLayout({ children }) {
         <div className="space-y-2 border-t border-white/10 p-4">
 
           <button
-            onClick={() => handleNavigation('/settings')}
+            type="button"
+            onClick={toggleTheme}
             className="
               flex
               w-full
@@ -242,8 +258,15 @@ function AppLayout({ children }) {
               hover:text-[var(--text-primary)]
             "
           >
-            <Settings size={18} />
-            Settings
+            {theme === 'dark' ? (
+              <Sun size={18} />
+            ) : (
+              <Moon size={18} />
+            )}
+
+            {theme === 'dark'
+              ? '☀️ Light mode'
+              : '🌙 Dark mode'}
           </button>
 
           <button
@@ -442,26 +465,34 @@ function AppLayout({ children }) {
 
             <div className="space-y-2 border-t border-white/10 p-4">
 
-              <button
-                onClick={() => handleNavigation('/settings')}
-                className="
-                  flex
-                  w-full
-                  items-center
-                  gap-3
-                  rounded-xl
-                  px-4
-                  py-3
-                  text-sm
-                  text-[var(--text-secondary)]
-                  transition
-                  hover:bg-white/5
-                  hover:text-[var(--text-primary)]
-                "
-              >
-                <Settings size={18} />
-                Settings
-              </button>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="
+            flex
+            w-full
+            items-center
+            gap-3
+            rounded-xl
+            px-4
+            py-3
+            text-sm
+            text-[var(--text-secondary)]
+            transition
+            hover:bg-white/5
+            hover:text-[var(--text-primary)]
+          "
+        >
+          {theme === 'dark' ? (
+            <Sun size={18} />
+          ) : (
+            <Moon size={18} />
+          )}
+
+          {theme === 'dark'
+            ? '☀️ Light mode'
+            : '🌙 Dark mode'}
+        </button>
 
               <button
                 onClick={handleLogout}
@@ -533,39 +564,20 @@ function AppLayout({ children }) {
             >
               <Menu size={20} />
             </button>
-
             <div
               className="
-                hidden
-                w-72
+                flex
                 items-center
-                gap-3
-                rounded-xl
-                border
-                border-white/10
-                bg-white/5
-                px-4
-                py-2
-                sm:flex
+                md:hidden
               "
             >
-              <Search
-                size={17}
-                className="text-[var(--text-secondary)]"
-              />
-
-              <input
-                type="text"
-                placeholder="Search..."
-                className="
-                  w-full
-                  bg-transparent
-                  text-sm
-                  text-[var(--text-primary)]
-                  outline-none
-                  placeholder:text-[var(--text-secondary)]
-                "
-              />
+              <p className="text-sm font-medium tracking-wide text-[var(--text-primary)]">
+                NEO
+                <span className="mx-2 text-[var(--text-secondary)]">·</span>
+                <span className="font-normal text-[var(--text-secondary)]">
+                  Team & Task Management
+                </span>
+              </p>
             </div>
 
           </div>
@@ -780,9 +792,11 @@ function AppLayout({ children }) {
             </div>
 
 
-            {/* User */}
+          {/* User */}
 
-            <div
+            <button
+              type="button"
+              onClick={() => handleNavigation('/dashboard')}
               className="
                 flex
                 items-center
@@ -793,11 +807,13 @@ function AppLayout({ children }) {
                 bg-white/5
                 px-2
                 py-2
+                transition
+                hover:bg-white/10
                 sm:gap-3
                 sm:px-3
               "
+              aria-label="Go to dashboard"
             >
-
               <div
                 className="
                   flex
@@ -820,8 +836,7 @@ function AppLayout({ children }) {
               <span className="hidden max-w-32 truncate text-sm text-[var(--text-secondary)] sm:block">
                 {displayName}
               </span>
-
-            </div>
+            </button>  
 
           </div>
 

@@ -4,7 +4,6 @@ import PublicRoute from './components/auth/PublicRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import Settings from './pages/Settings'
 import Team from './pages/Team'
 import Organization from './pages/Organization'
 import JoinRequests from './pages/JoinRequests'
@@ -83,15 +82,6 @@ function App() {
           element={
             <ProtectedRoute>
               <JoinRequests />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
             </ProtectedRoute>
           }
         />
