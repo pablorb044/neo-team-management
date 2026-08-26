@@ -25,3 +25,8 @@ export const markAllNotificationsAsRead = async () => {
 
   return response.data
 }
+
+export const getTeamActivity = async () => {
+  const response = await api.get('/notifications/team')
+  return response.data
+}

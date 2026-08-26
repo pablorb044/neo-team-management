@@ -1,5 +1,6 @@
 import AppLayout from '../components/layout/AppLayout'
 import Card from '../components/ui/Card'
+import { CheckSquare } from 'lucide-react'
 import { useDashboard } from '../hooks/useDashboard'
 import {
   deleteTeam,
@@ -12,6 +13,7 @@ import {
 import { useEffect, useState } from 'react'
 import { createTeamJoinRequest } from '../services/team-join-request.api'
 import Button from '../components/ui/Button'
+import { getTeamActivity } from '../services/notification.api'
 
 function Team() {
   const {
@@ -43,31 +45,70 @@ function Team() {
   const [requesting, setRequesting] = useState(false)
   const [requestSuccess, setRequestSuccess] = useState('')
   const [requestError, setRequestError] = useState('')
+  const [activity, setActivity] = useState([])
+  const [activityLoading, setActivityLoading] = useState(false)
+  const [activityError, setActivityError] = useState('')
+
 
   useEffect(() => {
     if (!team?.id) {
       return
     }
 
-    const loadMembers = async () => {
+    const loadTeamData = async () => {
       try {
         setLoadingMembers(true)
+        setActivityLoading(true)
         setError('')
+        setActivityError('')
 
-        const data = await getTeamMembers(team.id)
-        setMembers(data)
+        const [membersData, activityData] =
+          await Promise.all([
+            getTeamMembers(team.id),
+            getTeamActivity()
+          ])
+
+        setMembers(membersData)
+        setActivity(activityData)
       } catch (error) {
-        setError(
+        const message =
           error.response?.data?.error ||
-          'Error al cargar los miembros del Team'
-        )
+          'Error al cargar el Team'
+
+        setError(message)
+        setActivityError(message)
       } finally {
         setLoadingMembers(false)
+        setActivityLoading(false)
       }
     }
 
-    loadMembers()
+    loadTeamData()
   }, [team?.id, membersRefreshKey])
+
+  
+  useEffect(() => {
+    if (!team?.id) {
+      return
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const activityData = await getTeamActivity()
+        setActivity(activityData)
+        setActivityError('')
+      } catch (error) {
+        setActivityError(
+          error.response?.data?.error ||
+          'Error al actualizar la actividad del Team'
+        )
+      }
+    }, 30000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [team?.id])
 
   const errorMessage = dashboardError || error
 
@@ -247,6 +288,59 @@ function Team() {
   } finally {
     setRequesting(false)
   }
+  }
+
+  const getActivityMessage = (item) => {
+    const username =
+      item.task?.assignedTo?.username ||
+      item.user?.username ||
+      'Someone'
+
+    switch (item.type) {
+      case 'TASK_ASSIGNED':
+        return `${username} was assigned "${item.task?.title}"`
+
+      case 'TASK_SUBMITTED':
+        return `${username} submitted "${item.task?.title}"`
+
+      case 'TASK_COMPLETED':
+        return `${username}'s task "${item.task?.title}" was completed`
+
+      default:
+        return item.message
+    }
+  }
+
+  const getActivityStyle = (type) => {
+    switch (type) {
+      case 'TASK_ASSIGNED':
+        return {
+          icon: CheckSquare,
+          className:
+            'border-blue-400/20 bg-blue-500/10 text-blue-300'
+        }
+
+      case 'TASK_SUBMITTED':
+        return {
+          icon: CheckSquare,
+          className:
+            'border-yellow-400/20 bg-yellow-500/10 text-yellow-300'
+        }
+
+      case 'TASK_COMPLETED':
+        return {
+          icon: CheckSquare,
+          className:
+            'border-green-400/20 bg-green-500/10 text-green-300'
+        }
+
+      default:
+        return {
+          icon: CheckSquare,
+          className:
+            'border-white/10 bg-white/5 text-[var(--text-secondary)]'
+        }
+    }
   }
 
   return (
@@ -644,7 +738,87 @@ function Team() {
                 </div>
               </div>
             </Card>
+            <Card>
+              <div className="space-y-5">
 
+                <div>
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    Team activity
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-semibold">
+                    Recent activity
+                  </h2>
+                </div>
+
+                {activityLoading ? (
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    Loading activity...
+                  </p>
+                ) : activityError ? (
+                  <p className="text-sm text-red-400">
+                    {activityError}
+                  </p>
+                ) : activity.length === 0 ? (
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    No recent activity.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {activity.map((item) => (
+                    <div
+                      key={item.id}
+                      className="
+                        flex
+                        items-start
+                        gap-3
+                        rounded-xl
+                        border
+                        border-white/10
+                        bg-white/5
+                        px-4
+                        py-3
+                      "
+                    >
+                      {(() => {
+                        const activityStyle = getActivityStyle(item.type)
+                        const Icon = activityStyle.icon
+
+                        return (
+                          <div
+                            className={`
+                              flex
+                              h-9
+                              w-9
+                              shrink-0
+                              items-center
+                              justify-center
+                              rounded-full
+                              border
+                              ${activityStyle.className}
+                            `}
+                          >
+                            <Icon size={16} />
+                          </div>
+                        )
+                      })()}
+
+                      <div className="min-w-0">
+                        <p className="text-sm text-[var(--text-primary)]">
+                          {getActivityMessage(item)}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                          {new Date(item.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+            </Card>
           </>
         )}
 

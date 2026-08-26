@@ -147,7 +147,7 @@ function Tasks() {
 
       case 'SUBMITTED':
         return {
-          label: 'Submitted',
+          label: 'Ready for review',
           className:
             'border-yellow-400/20 bg-yellow-500/10 text-yellow-300'
         }
@@ -458,12 +458,13 @@ function Tasks() {
 
                     </div>
 
-                    {user?.role === 'manager' &&
-                      task.status === 'SUBMITTED' && (
-                        <p className="text-xs font-medium text-yellow-300">
-                          This task is waiting for your review.
-                        </p>
-                      )}
+                    {task.status === 'SUBMITTED' && (
+                      <p className="text-xs font-medium text-yellow-300">
+                        {user?.role === 'manager'
+                          ? 'Ready for manager review.'
+                          : 'Waiting for manager review.'}
+                      </p>
+                    )}
 
                   </div>
 
