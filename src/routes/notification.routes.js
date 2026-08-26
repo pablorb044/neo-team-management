@@ -22,6 +22,12 @@ notificationRouter.get(
   NotificationController.getUnreadCount
 )
 
+notificationRouter.get(
+  '/team',
+  authMiddleware,
+  NotificationController.getTeamActivity
+)
+
 notificationRouter.patch(
   '/:id/read',
   authMiddleware,

@@ -1,4 +1,5 @@
 import { NotificationModel } from '../models/notification.model.js'
+import { UserModel } from '../models/user.model.js'
 
 export class NotificationController {
 
@@ -42,6 +43,30 @@ export class NotificationController {
       return res.status(200).json({
         count
       })
+
+    } catch (err) {
+      console.error(err)
+
+      return res.status(500).json({
+        error: 'Internal server error'
+      })
+    }
+  }
+
+  static async getTeamActivity(req, res) {
+    try {
+      const user = await UserModel.getById(req.user.id)
+
+      if (!user?.teamId) {
+        return res.status(200).json([])
+      }
+
+      const activity =
+        await NotificationModel.getTeamActivity(
+          user.teamId
+        )
+
+      return res.status(200).json(activity)
 
     } catch (err) {
       console.error(err)

@@ -51,6 +51,47 @@ export class NotificationModel {
     })
   }
 
+  static async getTeamActivity(teamId) {
+    return prisma.notification.findMany({
+      where: {
+        type: {
+          in: [
+            'TASK_ASSIGNED',
+            'TASK_SUBMITTED',
+            'TASK_COMPLETED'
+          ]
+        },
+        task: {
+          teamId
+        }
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true
+          }
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+            assignedTo: {
+              select: {
+                id: true,
+                username: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 4
+    })
+  }
+
   static async markAsRead(id, userId) {
     return prisma.notification.updateMany({
       where: {
