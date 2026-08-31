@@ -111,7 +111,7 @@ return (
 
           <ProfileField
             label="Role"
-            value={user?.role}
+            value={user?.role?.toLowerCase()}
           />
 
           {editing ? (

@@ -212,7 +212,7 @@ function Organization() {
                     </p>
 
                     <p className="mt-1 text-lg font-medium">
-                      {user?.role}
+                      {user?.role?.toLowerCase()}
                     </p>
                   </div>
 

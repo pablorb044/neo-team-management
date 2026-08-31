@@ -11,13 +11,14 @@ import {
   X
 } from 'lucide-react'
 
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useTheme } from '../../hooks/useTheme'
 
 function AppLayout({ children }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
 
@@ -60,6 +61,8 @@ function AppLayout({ children }) {
     setNotificationsOpen(false)
     navigate(path)
   }
+
+  const isActiveRoute = (path) => location.pathname === path
 
   const handleNotificationClick = async (notification) => {
     if (!notification.read) {
@@ -124,23 +127,23 @@ function AppLayout({ children }) {
 
           <button
             onClick={() => handleNavigation('/dashboard')}
-            className="
+            className={`
               flex
               w-full
               items-center
               gap-3
               rounded-xl
-              bg-gradient-to-r
-              from-violet-600/80
-              to-purple-600/80
               px-4
               py-3
               text-sm
               font-medium
-              text-[var(--text-primary)]
-              shadow-lg
-              shadow-violet-900/20
-            "
+              transition
+              ${
+                isActiveRoute('/dashboard')
+                  ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                  : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+              }
+            `}
           >
             <User size={18} />
             Dashboard
@@ -148,7 +151,7 @@ function AppLayout({ children }) {
 
           <button
             onClick={() => handleNavigation('/tasks')}
-            className="
+            className={`
               mt-2
               flex
               w-full
@@ -158,11 +161,13 @@ function AppLayout({ children }) {
               px-4
               py-3
               text-sm
-              text-[var(--text-secondary)]
               transition
-              hover:bg-white/5
-              hover:text-[var(--text-primary)]
-            "
+              ${
+                isActiveRoute('/tasks')
+                  ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                  : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+              }
+            `}
           >
             <CheckSquare size={18} />
             Tasks
@@ -170,7 +175,7 @@ function AppLayout({ children }) {
 
           <button
             onClick={() => handleNavigation('/team')}
-            className="
+            className={`
               mt-2
               flex
               w-full
@@ -180,11 +185,13 @@ function AppLayout({ children }) {
               px-4
               py-3
               text-sm
-              text-[var(--text-secondary)]
               transition
-              hover:bg-white/5
-              hover:text-[var(--text-primary)]
-            "
+              ${
+                isActiveRoute('/team')
+                  ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                  : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+              }
+            `}
           >
             <User size={18} />
             Team
@@ -193,7 +200,7 @@ function AppLayout({ children }) {
           {user?.role === 'manager' && (
             <button
               onClick={() => handleNavigation('/join-requests')}
-              className="
+              className={`
                 mt-2
                 flex
                 w-full
@@ -203,11 +210,13 @@ function AppLayout({ children }) {
                 px-4
                 py-3
                 text-sm
-                text-[var(--text-secondary)]
                 transition
-                hover:bg-white/5
-                hover:text-[var(--text-primary)]
-              "
+                ${
+                  isActiveRoute('/join-requests')
+                    ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                    : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                }
+              `}
             >
               <Mail size={18} />
               Join Requests
@@ -216,7 +225,7 @@ function AppLayout({ children }) {
 
           <button
             onClick={() => handleNavigation('/organization')}
-            className="
+            className={`
               mt-2
               flex
               w-full
@@ -226,11 +235,13 @@ function AppLayout({ children }) {
               px-4
               py-3
               text-sm
-              text-[var(--text-secondary)]
               transition
-              hover:bg-white/5
-              hover:text-[var(--text-primary)]
-            "
+              ${
+                isActiveRoute('/organization')
+                  ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                  : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+              }
+            `}
           >
             <User size={18} />
             Organization
@@ -265,8 +276,8 @@ function AppLayout({ children }) {
             )}
 
             {theme === 'dark'
-              ? '☀️ Light mode'
-              : '🌙 Dark mode'}
+              ? 'Light mode'
+              : 'Dark mode'}
           </button>
 
           <button
@@ -293,7 +304,6 @@ function AppLayout({ children }) {
         </div>
 
       </aside>
-
 
       {/* Mobile menu overlay */}
 
@@ -349,23 +359,22 @@ function AppLayout({ children }) {
 
               <button
                 onClick={() => handleNavigation('/dashboard')}
-                className="
+                className={`
                   flex
                   w-full
                   items-center
                   gap-3
                   rounded-xl
-                  bg-gradient-to-r
-                  from-violet-600/80
-                  to-purple-600/80
                   px-4
                   py-3
                   text-sm
-                  font-medium
-                  text-[var(--text-primary)]
-                  shadow-lg
-                  shadow-violet-900/20
-                "
+                  transition
+                  ${
+                    isActiveRoute('/dashboard')
+                      ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                  }
+                `}
               >
                 <User size={18} />
                 Dashboard
@@ -373,7 +382,7 @@ function AppLayout({ children }) {
 
               <button
                 onClick={() => handleNavigation('/tasks')}
-                className="
+                className={`
                   mt-2
                   flex
                   w-full
@@ -383,11 +392,13 @@ function AppLayout({ children }) {
                   px-4
                   py-3
                   text-sm
-                  text-[var(--text-secondary)]
                   transition
-                  hover:bg-white/5
-                  hover:text-[var(--text-primary)]
-                "
+                  ${
+                    isActiveRoute('/tasks')
+                      ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                  }
+                `}
               >
                 <CheckSquare size={18} />
                 Tasks
@@ -395,7 +406,7 @@ function AppLayout({ children }) {
 
               <button
                 onClick={() => handleNavigation('/team')}
-                className="
+                className={`
                   mt-2
                   flex
                   w-full
@@ -405,11 +416,13 @@ function AppLayout({ children }) {
                   px-4
                   py-3
                   text-sm
-                  text-[var(--text-secondary)]
                   transition
-                  hover:bg-white/5
-                  hover:text-[var(--text-primary)]
-                "
+                  ${
+                    isActiveRoute('/team')
+                      ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                  }
+                `}
               >
                 <User size={18} />
                 Team
@@ -418,7 +431,7 @@ function AppLayout({ children }) {
               {user?.role === 'manager' && (
                 <button
                   onClick={() => handleNavigation('/join-requests')}
-                  className="
+                  className={`
                     mt-2
                     flex
                     w-full
@@ -428,11 +441,13 @@ function AppLayout({ children }) {
                     px-4
                     py-3
                     text-sm
-                    text-[var(--text-secondary)]
                     transition
-                    hover:bg-white/5
-                    hover:text-[var(--text-primary)]
-                  "
+                    ${
+                      isActiveRoute('/join-requests')
+                        ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                        : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                    }
+                  `}
                 >
                   <Mail size={18} />
                   Join Requests
@@ -441,8 +456,36 @@ function AppLayout({ children }) {
 
               <button
                 onClick={() => handleNavigation('/organization')}
-                className="
+                className={`
                   mt-2
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  transition
+                  ${
+                    isActiveRoute('/organization')
+                      ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                  }
+                `}
+              >
+                <User size={18} />
+                Organization
+              </button>
+
+            </nav>
+
+            <div className="space-y-2 border-t border-white/10 p-4">
+
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="
                   flex
                   w-full
                   items-center
@@ -457,42 +500,16 @@ function AppLayout({ children }) {
                   hover:text-[var(--text-primary)]
                 "
               >
-                <User size={18} />
-                Organization
+                {theme === 'dark' ? (
+                  <Sun size={18} />
+                ) : (
+                  <Moon size={18} />
+                )}
+
+                {theme === 'dark'
+                  ? 'â˜€ï¸ Light mode'
+                  : 'ðŸŒ™ Dark mode'}
               </button>
-
-            </nav>
-
-            <div className="space-y-2 border-t border-white/10 p-4">
-
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="
-            flex
-            w-full
-            items-center
-            gap-3
-            rounded-xl
-            px-4
-            py-3
-            text-sm
-            text-[var(--text-secondary)]
-            transition
-            hover:bg-white/5
-            hover:text-[var(--text-primary)]
-          "
-        >
-          {theme === 'dark' ? (
-            <Sun size={18} />
-          ) : (
-            <Moon size={18} />
-          )}
-
-          {theme === 'dark'
-            ? '☀️ Light mode'
-            : '🌙 Dark mode'}
-        </button>
 
               <button
                 onClick={handleLogout}
@@ -520,7 +537,6 @@ function AppLayout({ children }) {
           </aside>
         </div>
       )}
-
 
       {/* Main area */}
 
@@ -564,6 +580,7 @@ function AppLayout({ children }) {
             >
               <Menu size={20} />
             </button>
+
             <div
               className="
                 flex
@@ -582,8 +599,7 @@ function AppLayout({ children }) {
 
           </div>
 
-
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2sm:gap-4">
 
             {/* Notifications */}
 
@@ -642,26 +658,26 @@ function AppLayout({ children }) {
               {notificationsOpen && (
                 <div
                   className="
-                        fixed
-                        left-2
-                        right-2
-                        top-20
-                        z-50
-                        max-h-[calc(100vh-6rem)]
-                        overflow-hidden
-                        rounded-xl
-                        border
-                        border-white/10
-                        bg-[var(--bg-secondary)]
-                        shadow-2xl
-                        sm:absolute
-                        sm:left-auto
-                        sm:right-0
-                        sm:top-12
-                        sm:w-96
-                        sm:max-h-none
-                        "
-                  >
+                    fixed
+                    left-2
+                    right-2
+                    top-20
+                    z-50
+                    max-h-[calc(100vh-6rem)]
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-white/10
+                    bg-[var(--bg-secondary)]
+                    shadow-2xl
+                    sm:absolute
+                    sm:left-auto
+                    sm:right-0
+                    sm:top-12
+                    sm:w-96
+                    sm:max-h-none
+                  "
+                >
 
                   <div
                     className="
@@ -757,7 +773,7 @@ function AppLayout({ children }) {
                             />
                           </div>
 
-                          <div className="min-w-0 flex-1">
+                          <div className="min-w-0flex-1">
 
                             <p
                               className={`
@@ -791,8 +807,7 @@ function AppLayout({ children }) {
               )}
             </div>
 
-
-          {/* User */}
+            {/* User */}
 
             <button
               type="button"
@@ -836,12 +851,11 @@ function AppLayout({ children }) {
               <span className="hidden max-w-32 truncate text-sm text-[var(--text-secondary)] sm:block">
                 {displayName}
               </span>
-            </button>  
+            </button>
 
           </div>
 
         </header>
-
 
         {/* Page content */}
 

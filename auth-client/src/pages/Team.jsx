@@ -562,7 +562,7 @@ function Team() {
                   <span className="text-[var(--text-secondary)]">
                     Your role:
                   </span>{' '}
-                  {user?.role}
+                  {user?.role?.toLowerCase()}
                 </p>
 
                 {user?.role === 'user' && (
@@ -690,7 +690,7 @@ function Team() {
                             text-[var(--text-secondary)]
                           "
                         >
-                          {member.role}
+                          {member.role?.toLowerCase()}
                         </span>
 
                         {user?.role === 'manager' &&

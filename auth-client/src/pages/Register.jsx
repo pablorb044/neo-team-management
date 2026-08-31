@@ -94,8 +94,19 @@ function Register() {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Registrando...' : 'Register'}
+            {loading ? 'Registrando...' : 'Create Account'}
           </Button>
+
+          <p className="text-center text-sm text-[var(--text-secondary)]">
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="font-medium text-violet-300 transition hover:text-violet-200"
+            >
+              Log in
+            </button>
+          </p>
 
       </AuthForm>
     </PublicLayout>

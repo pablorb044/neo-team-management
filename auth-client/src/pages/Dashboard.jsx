@@ -257,7 +257,7 @@ function Dashboard() {
                   <span className="text-[var(--text-secondary)]">
                     Role:
                   </span>{' '}
-                  {user?.role}
+                  {user?.role?.toLowerCase()}
                 </p>
               </div>
             </div>

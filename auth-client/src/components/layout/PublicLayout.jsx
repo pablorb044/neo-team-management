@@ -1,7 +1,11 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 function PublicLayout({ children }) {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const isActiveRoute = (path) =>
+    location.pathname === path
 
   return (
     <div className="min-h-screen bg-[#080316] text-white">
@@ -36,11 +40,17 @@ function PublicLayout({ children }) {
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="
-                text-white/60
+              className={`
+                rounded-lg
+                px-3
+                py-2
                 transition
-                hover:text-white
-              "
+                ${
+                  isActiveRoute('/login')
+                    ? 'border border-white/10 bg-white/5 text-white/80'
+                    : 'text-white/60 hover:text-white'
+                }
+              `}
             >
               Login
             </button>
@@ -48,18 +58,17 @@ function PublicLayout({ children }) {
             <button
               type="button"
               onClick={() => navigate('/register')}
-              className="
+              className={`
                 rounded-lg
-                border
-                border-white/10
-                bg-white/5
                 px-3
                 py-2
-                text-white/80
                 transition
-                hover:bg-white/10
-                hover:text-white
-              "
+                ${
+                  isActiveRoute('/register')
+                    ? 'border border-white/10 bg-white/5 text-white/80'
+                    : 'text-white/60 hover:text-white'
+                }
+              `}
             >
               Register
             </button>
