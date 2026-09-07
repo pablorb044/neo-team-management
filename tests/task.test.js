@@ -83,6 +83,18 @@ describe('Tasks', () => {
     expect(response.body.teamId).toBe(teamId)
     expect(response.body.assignedToId).toBe(employeeId)
     expect(response.body.status).toBe('SENT')
+
+    const notification = await prisma.notification.findFirst({
+      where: {
+        userId: employeeId,
+        type: 'TASK_ASSIGNED',
+        taskId: response.body.id
+      }
+    })
+
+    expect(notification).not.toBeNull()
+    expect(notification.message)
+      .toBe('You have been assigned a new task: "Implement login"')
   })
 
     it('should reject a non-manager from creating a task', async () => {
@@ -1328,6 +1340,16 @@ describe('Tasks', () => {
 
   expect(doneResponse.status).toBe(200)
   expect(doneResponse.body.status).toBe('DONE')
+
+  const notification = await prisma.notification.findFirst({
+  where: {
+    userId: memberId,
+    type: 'TASK_COMPLETED',
+    taskId: taskId
+  }
+})
+
+expect(notification).not.toBeNull()
 })
 
 it('should reject a MEMBER from moving a submitted task to DONE', async () => {
