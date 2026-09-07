@@ -10,6 +10,7 @@ import JoinRequests from './pages/JoinRequests'
 import Tasks from './pages/Tasks'
 import Landing from './pages/Landing'
 import Profile from './pages/Profile'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -94,6 +95,11 @@ function App() {
               <JoinRequests />
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="*"
+          element={<NotFound />}
         />
 
       </Routes>
