@@ -384,6 +384,7 @@ it('should allow a team member to leave the team', async () => {
   })
 
   expect(user.teamId).toBeNull()
+  expect(user.role).toBe('user')
 })
 
 it('should reject leaving a team that the user does not belong to', async () => {
@@ -558,6 +559,7 @@ it('should allow manager to remove a team member', async () => {
   })
 
   expect(updatedUser.teamId).toBeNull()
+  expect(updatedUser.role).toBe('user')
 })
 
 it('should reject removing a member for non-manager', async () => {
@@ -1664,6 +1666,7 @@ it('should clear team membership when deleting a team', async () => {
   })
 
   expect(userAfterDelete.teamId).toBeNull()
+  expect(userAfterDelete.role).toBe('user')
 })
 
 it('should reset manager role when deleting a team', async () => {

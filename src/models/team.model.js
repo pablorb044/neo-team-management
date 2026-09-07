@@ -78,7 +78,8 @@ export class TeamModel {
         id: userId
       },
       data: {
-        teamId: null
+        teamId: null,
+        role: 'user'
       }
     })
   }
@@ -90,7 +91,8 @@ export class TeamModel {
         teamId
       },
       data: {
-        teamId: null
+        teamId: null,
+        role: 'user'
       }
     })
   }
@@ -146,7 +148,8 @@ static async deleteTeam(teamId) {
         teamId
       },
       data: {
-        teamId: null
+        teamId: null,
+        role: 'user'
       }
     })
 
