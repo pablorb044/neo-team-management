@@ -818,7 +818,7 @@ function AppLayout({ children }) {
                             />
                           </div>
 
-                          <div className="min-w-0flex-1">
+                          <div className="min-w-0 flex-1">
 
                             <p
                               className={`
