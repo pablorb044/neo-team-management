@@ -159,13 +159,6 @@ function Tasks() {
             'border-green-400/20 bg-green-500/10 text-green-300'
         }
 
-      case 'REJECTED':
-        return {
-          label: 'Rejected',
-          className:
-            'border-red-400/20 bg-red-500/10 text-red-300'
-        }
-
       default:
         return {
           label: status,
