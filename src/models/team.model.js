@@ -127,6 +127,22 @@ static async deleteTeam(teamId) {
       }
     })
 
+    await tx.notification.deleteMany({
+      where: {
+        task: {
+          teamId
+        }
+      }
+    })
+
+    await tx.notification.deleteMany({
+      where: {
+        task: {
+          teamId
+        }
+      }
+    })
+
     await tx.task.deleteMany({
       where: {
         teamId

@@ -1655,9 +1655,48 @@ it('should clear team membership when deleting a team', async () => {
 
   expect(userBeforeDelete.teamId).toBe(teamId)
 
+  const taskResponse = await request(app)
+  .post(`/teams/${teamId}/tasks`)
+  .set('Authorization', `Bearer ${managerToken}`)
+  .send({
+    title: 'Task to delete',
+    description: 'This task belongs to the team',
+    assignedToId: userBeforeDelete.id
+  })
+
+expect(taskResponse.status).toBe(201)
+
+const taskNotification = await prisma.notification.findFirst({
+  where: {
+    userId: userBeforeDelete.id,
+    type: 'TASK_ASSIGNED',
+    message: 'You have been assigned a new task: "Task to delete"'
+  }
+})
+
+expect(taskNotification).not.toBeNull()
+
   await request(app)
     .delete(`/teams/${teamId}`)
     .set('Authorization', `Bearer ${managerToken}`)
+
+  const deletedTask = await prisma.task.findUnique({
+    where: {
+      id: taskResponse.body.id
+    }
+  })
+
+  expect(deletedTask).toBeNull()
+
+  const deletedTaskNotification = await prisma.notification.findFirst({
+    where: {
+      userId: userBeforeDelete.id,
+      type: 'TASK_ASSIGNED',
+      message: 'You have been assigned a new task: "Task to delete"'
+    }
+  })
+
+  expect(deletedTaskNotification).toBeNull()
 
   const userAfterDelete = await prisma.user.findUnique({
     where: {
