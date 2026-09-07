@@ -71,17 +71,15 @@ function AppLayout({ children }) {
 
     setNotificationsOpen(false)
 
-    const teamNotificationTypes = [
-      'TEAM_JOIN_REQUEST',
-      'TEAM_JOIN_APPROVED',
-      'TEAM_JOIN_REJECTED'
-    ]
-
-    const destination = teamNotificationTypes.includes(
-      notification.type
-    )
-      ? '/team'
-      : '/tasks'
+    const destination =
+      notification.type === 'TEAM_JOIN_REQUEST'
+        ? '/join-requests'
+        : [
+            'TEAM_JOIN_APPROVED',
+            'TEAM_JOIN_REJECTED'
+          ].includes(notification.type)
+          ? '/team'
+          : '/tasks'
 
     navigate(destination)
   }
