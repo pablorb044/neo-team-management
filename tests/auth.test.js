@@ -307,6 +307,30 @@ it('should return current user', async () => {
   expect(response.body).toHaveProperty('teamId', null)
 })
 
+it('should normalize email when registering and logging in', async () => {
+
+  const registerResponse = await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Pablo',
+      email: '  Pablo@TEST.COM  ',
+      password: '123456'
+    })
+
+  expect(registerResponse.status).toBe(201)
+  expect(registerResponse.body.email).toBe('pablo@test.com')
+
+  const loginResponse = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'PABLO@test.com',
+      password: '123456'
+    })
+
+  expect(loginResponse.status).toBe(200)
+  expect(loginResponse.body.token).toBeDefined()
+})
+
 afterAll(async () => {
     await prisma.$disconnect()
   })

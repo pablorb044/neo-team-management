@@ -7,6 +7,9 @@ export const updateUserSchema = z.object({
     .optional(),
 
   email: z
-    .email('Invalid email')
-    .optional()
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email('Invalid email'))
+  .optional()
 })
