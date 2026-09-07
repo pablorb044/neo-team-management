@@ -23,8 +23,23 @@ function Register() {
   if (loading) return
 
   if (!username || !email || !password) {
-  setError('Todos los campos son obligatorios')
-  return
+    setError('Todos los campos son obligatorios')
+    return
+  }
+
+  if (username.length < 3) {
+    setError('Username must be at least 3 characters')
+    return
+  }
+
+  if (!email.includes('@')) {
+    setError('Invalid email')
+    return
+  }
+
+  if (password.length < 6) {
+    setError('Password must be at least 6 characters')
+    return
   }
 
   try {
@@ -43,8 +58,15 @@ function Register() {
     }
   })
   } catch (error) {
+    const backendError =
+      error.response?.data?.error
+
+    const validationError =
+      error.response?.data?.errors?.[0]?.message
+
     setError(
-      error.response?.data?.error ||
+      backendError ||
+      validationError ||
       'Error al registrar usuario'
     )
   } finally {
