@@ -489,6 +489,7 @@ it('should approve a team join request', async () => {
   })
 
   expect(user.teamId).toBe(teamId)
+  expect(user.role).toBe('MEMBER')
 })
 
 it('should reject approving a join request for non-manager', async () => {

@@ -99,14 +99,15 @@ export class TeamJoinRequestModel {
         }
       })
 
-      await tx.user.update({
-        where: {
-          id: userId
-        },
-        data: {
-          teamId
-        }
-      })
+    await tx.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        teamId,
+        role: 'MEMBER'
+      }
+    })
 
       return request
     })
