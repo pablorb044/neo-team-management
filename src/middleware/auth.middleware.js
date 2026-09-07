@@ -1,5 +1,6 @@
 import { UserModel } from '../models/user.model.js'
 import { verifyToken } from '../utils/jwt.js'
+import { sanitizeUser } from '../utils/user.js'
 
 export async function authMiddleware(req, res, next) {
   try {
@@ -30,7 +31,7 @@ export async function authMiddleware(req, res, next) {
     }
 
     // 5. guardar usuario en request
-    req.user = decoded
+    req.user = sanitizeUser(user)
 
     next()
 
