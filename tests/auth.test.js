@@ -331,6 +331,34 @@ it('should normalize email when registering and logging in', async () => {
   expect(loginResponse.body.token).toBeDefined()
 })
 
+it('should reject updating current user with an empty body', async () => {
+
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Pablo',
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const loginResponse = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const token = loginResponse.body.token
+
+  const response = await request(app)
+    .put('/auth/me')
+    .set('Authorization', `Bearer ${token}`)
+    .send({})
+
+  expect(response.status).toBe(400)
+  expect(response.body.errors).toBeDefined()
+})
+
 afterAll(async () => {
     await prisma.$disconnect()
   })
