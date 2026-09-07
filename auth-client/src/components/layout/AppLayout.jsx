@@ -403,6 +403,30 @@ function AppLayout({ children }) {
               </button>
 
               <button
+                onClick={() => handleNavigation('/profile')}
+                className={`
+                  mt-2
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  transition
+                  ${
+                    isActiveRoute('/profile')
+                      ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
+                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                  }
+                `}
+              >
+                <User size={18} />
+                Profile
+              </button>
+
+              <button
                 onClick={() => handleNavigation('/tasks')}
                 className={`
                   mt-2
@@ -499,31 +523,6 @@ function AppLayout({ children }) {
                 <User size={18} />
                 Organization
               </button>
-
-              <button
-                onClick={() => handleNavigation('/profile')}
-                className={`
-                  mt-2
-                  flex
-                  w-full
-                  items-center
-                  gap-3
-                  rounded-xl
-                  px-4
-                  py-3
-                  text-sm
-                  transition
-                  ${
-                    isActiveRoute('/profile')
-                      ? 'bg-gradient-to-r from-violet-600/80 to-purple-600/80 font-medium text-[var(--text-primary)] shadow-lg shadow-violet-900/20'
-                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
-                  }
-                `}
-              >
-                <User size={18} />
-                Profile
-              </button>
-
             </nav>
 
             <div className="space-y-2 border-t border-white/10 p-4">
