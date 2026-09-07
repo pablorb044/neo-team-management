@@ -109,7 +109,7 @@ it('should reject invalid credentials', async () => {
     })
 
   // Assert
-  expect(response.status).toBe(400)
+  expect(response.status).toBe(401)
   expect(response.body.error).toBe('Invalid credentials')
 
 })

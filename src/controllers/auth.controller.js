@@ -58,7 +58,7 @@ export class AuthController {
       const user = await UserModel.getByEmail(email)
 
       if (!user) {
-        return res.status(400).json({
+        return res.status(401).json({
           error: 'Invalid credentials'
         })
       }
@@ -69,7 +69,7 @@ export class AuthController {
       )
 
       if (!isValid) {
-        return res.status(400).json({
+        return res.status(401).json({
           error: 'Invalid credentials'
         })
       }
