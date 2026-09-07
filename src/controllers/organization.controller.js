@@ -10,6 +10,15 @@ export class OrganizationController {
       const { organizationName, teamName } =
         createOrganizationSchema.parse(req.body)
 
+      const user =
+        await OrganizationModel.getUserOrganization(req.user.id)
+
+      if (user?.teamId) {
+        return res.status(400).json({
+          error: 'User already belongs to a team'
+        })
+      }
+
       const result = await OrganizationModel.createWithTeam({
         organizationName,
         teamName,

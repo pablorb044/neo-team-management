@@ -95,7 +95,81 @@ it('should reject creating a second team for the same manager', async () => {
 
   expect(response.status).toBe(400)
   expect(response.body.error)
-    .toBe('Organization or manager already has a team')
+    .toBe('User already belongs to a team')
+})
+
+it('should reject organization creation when user already belongs to a team', async () => {
+
+  // Create manager
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Manager',
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerToken = managerLogin.body.token
+
+  // Create organization/team
+  const organizationResponse = await request(app)
+    .post('/organizations')
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      organizationName: 'Acme',
+      teamName: 'Engineering'
+    })
+
+  const teamId = organizationResponse.body.team.id
+
+  // Register member
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Pablo',
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const userLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const userToken = userLogin.body.token
+
+  // Request to join team
+  const joinRequest = await request(app)
+    .post('/team-join-requests')
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({ teamId })
+
+  // Manager approves
+  await request(app)
+    .patch(`/team-join-requests/${joinRequest.body.id}/approve`)
+    .set('Authorization', `Bearer ${managerToken}`)
+
+  // Member tries to create another organization
+  const response = await request(app)
+    .post('/organizations')
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({
+      organizationName: 'Otra Empresa',
+      teamName: 'Otro Equipo'
+    })
+
+  expect(response.status).toBe(400)
+  expect(response.body.error)
+    .toBe('User already belongs to a team')
 })
 
 it('should reject organization creation without authentication', async () => {
