@@ -46,9 +46,9 @@ const handleUpdate = async (e) => {
 
 return (
   <AppLayout>
-    <div className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center">
-      <Card>
-        <div className="mb-6 flex items-center justify-between">
+    <div className="flex min-h-[calc(100vh-8rem)] w-full items-start justify-center">
+      <Card className="w-full max-w-xl">
+        <div className="mb-8 flex items-center justify-between gap-6">
           <h1 className="text-3xl font-semibold text-white">
             {editing ? 'Edit Profile' : 'Profile Page'}
           </h1>
@@ -60,7 +60,7 @@ return (
                 setEmail(user?.email || '')
                 setEditing(true)
               }}
-              className="w-auto"
+              className="w-auto px-4 py-2"
             >
               Edit
             </Button>
@@ -122,7 +122,7 @@ return (
                   setEmail(user?.email || '')
                   setEditing(false)
                 }}
-                className="w-auto bg-white/10 hover:bg-white/20"
+                className="w-auto px-4 py-2 bg-white/10 hover:bg-white/20"
               >
                 Cancel
               </Button>
@@ -130,13 +130,15 @@ return (
               <Button
                 type="submit"
                 disabled={saving || !hasChanges}
-                className="w-auto"
+                className="w-auto px-4 py-2"
               >
                 {saving ? 'Saving...' : 'Save changes'}
               </Button>
             </div>
           ) : (
-            <Button onClick={handleLogout}>
+            <Button onClick={handleLogout}
+            className="w-auto px-4 py-2"
+            >
               Logout
             </Button>
           )}
