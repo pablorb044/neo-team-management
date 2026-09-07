@@ -304,6 +304,14 @@ it('should reject an empty organization name update', async () => {
   expect(response.status).toBe(400)
 })
 
+it('should return 404 for a nonexistent route', async () => {
+
+  const response = await request(app)
+    .get('/this-route-does-not-exist')
+
+  expect(response.status).toBe(404)
+  expect(response.body.error).toBe('Route not found')
+})
 
 afterAll(async () => {
     await prisma.$disconnect()
