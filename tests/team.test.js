@@ -3,7 +3,7 @@ import request from 'supertest'
 import { app } from '../src/app.js'
 import { prisma } from '../src/lib/prisma.js'
 
-describe('Team Join Requests', () => {
+describe('Teams', () => {
 
 beforeEach(async () => {
   await prisma.notification.deleteMany()
