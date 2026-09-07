@@ -11,11 +11,15 @@ import {
   updateTeamMemberRole
 } from '../services/team.api'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { createTeamJoinRequest } from '../services/team-join-request.api'
 import Button from '../components/ui/Button'
 import { getTeamActivity } from '../services/notification.api'
 
 function Team() {
+
+  const navigate = useNavigate()
+
   const {
     user,
     team,
@@ -139,7 +143,7 @@ function Team() {
 
       await leaveTeam(team.id)
 
-      window.location.reload()
+      navigate('/dashboard')
     } catch (error) {
       setLeaveError(
         error.response?.data?.error ||
@@ -251,7 +255,7 @@ function Team() {
 
       await deleteTeam(team.id)
 
-      window.location.href = '/dashboard'
+      navigate('/dashboard')
     } catch (error) {
       setDeleteError(
         error.response?.data?.error ||
