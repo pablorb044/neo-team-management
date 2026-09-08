@@ -552,8 +552,8 @@ function AppLayout({ children }) {
                 )}
 
                 {theme === 'dark'
-                  ? 'â˜€ï¸ Light mode'
-                  : 'ðŸŒ™ Dark mode'}
+                  ? 'Light mode'
+                  : 'Dark mode'}
               </button>
 
               <button

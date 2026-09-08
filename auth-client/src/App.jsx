@@ -11,98 +11,102 @@ import Tasks from './pages/Tasks'
 import Landing from './pages/Landing'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
 
-        <Route
-          path="/"
-          element={
-            <PublicRoute>
-              <Landing />
-            </PublicRoute>
-          }
-        />
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Landing />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/tasks"
-          element={
-            <ProtectedRoute>
-              <Tasks />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/team"
-          element={
-            <ProtectedRoute>
-              <Team />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <Tasks />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/organization"
-          element={
-            <ProtectedRoute>
-              <Organization />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/team"
+            element={
+              <ProtectedRoute>
+                <Team />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/join-requests"
-          element={
-            <ProtectedRoute>
-              <JoinRequests />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/organization"
+            element={
+              <ProtectedRoute>
+                <Organization />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
+          <Route
+            path="/join-requests"
+            element={
+              <ProtectedRoute>
+                <JoinRequests />
+              </ProtectedRoute>
+            }
+          />
 
-      </Routes>
+          <Route
+            path="*"
+            element={<NotFound />}
+          />
+
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }
