@@ -6,7 +6,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useDashboard } from '../hooks/useDashboard'
 import {
   createOrganization,
-  getOrganizationMembers
+  getOrganizationMembers,
+  updateOrganization
 } from '../services/organization.api'
 
 function Organization() {
@@ -16,10 +17,15 @@ function Organization() {
     organization,
     team,
     loading,
-    error
+    error,
+    refreshDashboard
   } = useDashboard()
 
   const [organizationName, setOrganizationName] = useState('')
+  const [editingName, setEditingName] = useState(false)
+  const [savingName, setSavingName] = useState(false)
+  const [nameError, setNameError] = useState('')
+  const [editedOrganizationName, setEditedOrganizationName] = useState('')
   const [teamName, setTeamName] = useState('')
   const [creatingOrganization, setCreatingOrganization] = useState(false)
   const [organizationSuccess, setOrganizationSuccess] = useState('')
@@ -99,6 +105,38 @@ function Organization() {
     }
   }
 
+  const handleUpdateOrganization = async (event) => {
+  event.preventDefault()
+
+  if (savingName || !editedOrganizationName.trim()) {
+    return
+  }
+
+  try {
+    setSavingName(true)
+    setNameError('')
+
+    await updateOrganization(
+      organization.id,
+      {
+        name: editedOrganizationName.trim()
+      }
+    )
+
+    setEditingName(false)
+    setNameError('')
+
+    refreshDashboard()
+  } catch (error) {
+    setNameError(
+      error.response?.data?.error ||
+      'Error updating the organization'
+    )
+  } finally {
+    setSavingName(false)
+  }
+}
+
   const handleCopyTeamId = async () => {
     if (!team?.id) {
       return
@@ -161,9 +199,82 @@ function Organization() {
                     Organization
                   </p>
 
-                  <h2 className="mt-1 text-xl font-semibold">
-                    {organization.name}
-                  </h2>
+                  {editingName ? (
+                    <form
+                      onSubmit={handleUpdateOrganization}
+                      className="mt-2 flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={editedOrganizationName}
+                        onChange={(event) => {
+                          setEditedOrganizationName(event.target.value)
+                          setNameError('')
+                        }}
+                        minLength={2}
+                        required
+                        className="
+                          min-w-0
+                          flex-1
+                          rounded-xl
+                          border
+                          border-white/10
+                          bg-white/5
+                          px-3
+                          py-2
+                          text-[var(--text-primary)]
+                          outline-none
+                        "
+                      />
+
+                      <Button
+                        type="submit"
+                        disabled={savingName}
+                        className="w-auto"
+                      >
+                        {savingName ? 'Saving...' : 'Save'}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        disabled={savingName}
+                        onClick={() => {
+                          setEditedOrganizationName(organization.name)
+                          setEditingName(false)
+                          setNameError('')
+                        }}
+                        className="w-auto bg-white/10 hover:bg-white/20"
+                      >
+                        Cancel
+                      </Button>
+                    </form>
+                  ) : (
+                    <div className="mt-1 flex items-center gap-3">
+                      <h2 className="text-xl font-semibold">
+                        {organization.name}
+                      </h2>
+
+                      {user?.role === 'manager' && (
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setEditedOrganizationName(organization.name)
+                            setEditingName(true)
+                            setNameError('')
+                          }}
+                          className="w-auto px-3 py-2 text-sm"
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {nameError && (
+                    <p className="mt-2 text-sm text-red-400">
+                      {nameError}
+                    </p>
+                  )}
 
                   <p className="mt-2 text-sm text-[var(--text-secondary)]">
                     Your organization workspace
