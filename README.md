@@ -34,12 +34,6 @@ La aplicación está desplegada públicamente y puede probarse directamente desd
 
 La Landing Page presenta el propósito de NEO, su workflow principal y sus funcionalidades más importantes.
 
-### Login
-
-![NEO Login](./docs/screenshots/Login.jpeg)
-
-La pantalla de Login permite acceder a la aplicación mediante las credenciales del usuario.
-
 ### Dashboard
 
 ![NEO Dashboard](./docs/screenshots/Dashboard.jpeg)
