@@ -2,51 +2,81 @@
 
 NEO es una aplicación full-stack para la gestión de equipos y tareas.
 
-El proyecto comenzó como una API de autenticación y evolucionó hasta convertirse en una aplicación completa que integra autenticación, Organizations, Teams, gestión de miembros, Join Requests, Tasks, Notifications, Team Activity y un Dashboard adaptado al usuario.
+El proyecto comenzó como una API de autenticación y evolucionó hasta convertirse en una aplicación completa que integra autenticación, Organizations, Teams, gestión de miembros, Join Requests, Tasks, Notifications, Team Activity, Profiles y un Dashboard adaptado al usuario.
 
-El objetivo de NEO es demostrar la capacidad de diseñar, desarrollar, probar, desplegar y evolucionar una aplicación full-stack real manteniendo una arquitectura clara, reglas de negocio consistentes y una experiencia de usuario cuidada.
+El objetivo de NEO es demostrar la capacidad de diseñar, desarrollar, probar, desplegar y evolucionar una aplicación full-stack real manteniendo un dominio claro, reglas de negocio consistentes y una experiencia de usuario cuidada.
 
-## 🌍 Live Demo
+---
 
-**Frontend**
+## 🌍 Demo online
+
+### Frontend
 
 https://neo-frontend-0b1h.onrender.com/
 
-**Backend**
+### Backend
 
 https://neo-31hl.onrender.com
 
-**Health Check**
+### Health Check
 
 https://neo-31hl.onrender.com/ping
 
 La aplicación está desplegada públicamente y puede probarse directamente desde el navegador.
 
+---
+
 ## 📸 Screenshots
 
 ### Landing Page
 
-![NEO Landing Page](./docs/screenshots/LANDING.png)
+![NEO Landing Page](./docs/screenshots/LandingPage.jpeg)
 
-La Landing presenta el propósito de NEO, su workflow principal, sus funcionalidades principales y una preview visual del producto.
+La Landing Page presenta el propósito de NEO, su workflow principal y sus funcionalidades más importantes.
+
+### Login
+
+![NEO Login](./docs/screenshots/Login.jpeg)
+
+La pantalla de Login permite acceder a la aplicación mediante las credenciales del usuario.
 
 ### Dashboard
 
-![NEO Dashboard](./docs/screenshots/DASHBOARD.png)
+![NEO Dashboard](./docs/screenshots/Dashboard.jpeg)
 
-El Dashboard adapta la información mostrada al usuario autenticado y proporciona una visión rápida del estado actual del trabajo.
+El Dashboard adapta la información mostrada al usuario autenticado y a su contexto dentro del Team.
 
 ### Tasks
 
-![NEO Tasks](./docs/screenshots/TASK.png)
+![NEO Tasks](./docs/screenshots/Tasks.jpeg)
 
-La pantalla de Tasks centraliza la asignación, progreso, revisión y finalización del trabajo.
+La pantalla de Tasks centraliza la asignación, progreso, entrega, revisión y finalización del trabajo.
 
 ### Team & Recent Activity
 
-![NEO Team and Recent Activity](./docs/screenshots/TEAM.png)
+![NEO Team and Recent Activity](./docs/screenshots/Team.jpeg)
 
-La página de Team combina gestión de miembros con un feed de actividad reciente basado en eventos reales de las Tasks.
+La página de Team combina la gestión de miembros con un feed de actividad reciente basado en eventos reales de las Tasks.
+
+### Join Requests
+
+![NEO Join Requests](./docs/screenshots/JoinRequest.jpeg)
+
+La pantalla de Join Requests permite al manager revisar y gestionar las solicitudes para unirse al Team.
+
+### Organization
+
+![NEO Organization](./docs/screenshots/Organization.jpeg)
+
+La página de Organization permite consultar la información de la organización y, para el manager, editar su nombre.
+
+### Profile
+
+![NEO Profile](./docs/screenshots/Profile.jpeg)
+
+La página de Profile permite al usuario consultar y actualizar su información personal.
+
+---
 
 ## 🚀 Qué es NEO
 
@@ -94,7 +124,9 @@ El dominio está deliberadamente limitado para mantener el producto pequeño, f�
 * Las acciones importantes generan Notifications.
 * El Team muestra actividad reciente relacionada con las Tasks.
 
-La decisión de mantener una Organization con un solo Team en esta versión es deliberada. El objetivo de NEO no es maximizar el número de funcionalidades, sino mantener un dominio pequeño y suficientemente completo para demostrar capacidades full-stack reales.
+Mantener una Organization con un solo Team en esta versión es una decisión deliberada. El objetivo de NEO no es maximizar el número de funcionalidades, sino mantener un dominio pequeño y suficientemente completo para demostrar capacidades full-stack reales.
+
+---
 
 ## ✨ Funcionalidades
 
@@ -112,6 +144,7 @@ La decisión de mantener una Organization con un solo Team en esta versión es d
 * Desactivación lógica de usuarios.
 * Hash de contraseñas mediante bcrypt.
 * Validación de entradas con Zod.
+* Protección frente a acceso de usuarios inactivos.
 
 ### 🏢 Organizations y Teams
 
@@ -119,21 +152,24 @@ La decisión de mantener una Organization con un solo Team en esta versión es d
 * El creador se convierte automáticamente en Manager.
 * Consulta del Team y sus miembros.
 * Renombrado del Team.
+* Edición del nombre de la Organization.
 * Eliminación del Team.
 * Abandonar un Team.
 * Expulsar miembros.
 * Promover usuarios a `MEMBER`.
-* Limpieza transaccional al eliminar un Team.
 * Visualización del contexto Organization → Team.
 * Visualización del Manager, número de miembros y rol actual.
 * Copia rápida del Team ID para compartirlo con nuevos miembros.
+* Limpieza transaccional al eliminar un Team.
 
-La eliminación de un Team mantiene la integridad del sistema:
+La eliminación de un Team mantiene la integridad de los datos relacionados:
 
 ```text
-Delete Team
+Eliminar Team
     ↓
 Eliminar Join Requests
+    ↓
+Eliminar Notifications de las Tasks
     ↓
 Eliminar Tasks
     ↓
@@ -144,9 +180,18 @@ Restaurar Manager → user
 Eliminar Team
 ```
 
+### 👤 Profile
+
+Los usuarios autenticados pueden acceder a su Profile y actualizar:
+
+* Username.
+* Email.
+
+Las actualizaciones se validan y los cambios vacíos se rechazan en lugar de devolver un éxito falso.
+
 ### 🤝 Join Requests
 
-Los usuarios sin Team pueden solicitar acceso utilizando un Team ID.
+Los usuarios sin Team pueden solicitar acceso a un Team utilizando su Team ID.
 
 ```text
 USER
@@ -163,10 +208,10 @@ Manager
 El sistema:
 
 * evita solicitudes pendientes duplicadas;
-* permite aprobar o rechazar solicitudes;
-* permite volver a solicitar acceso después de una solicitud aprobada o rechazada;
+* permite volver a solicitar acceso después de una solicitud resuelta;
 * restringe la gestión de solicitudes al Manager correspondiente;
-* genera Notifications asociadas a los eventos relevantes.
+* asigna automáticamente el rol `MEMBER` al aprobar una solicitud;
+* genera Notifications para los eventos relevantes.
 
 ### 📋 Tasks
 
@@ -182,14 +227,12 @@ SUBMITTED
 DONE
 ```
 
-El significado de cada estado es:
-
-| Estado      | Significado                                                       |
-| ----------- | ----------------------------------------------------------------- |
-| `SENT`      | Task asignada y esperando a comenzar.                             |
-| `WORKING`   | El MEMBER está trabajando en la Task.                             |
-| `SUBMITTED` | El MEMBER ha enviado el trabajo y espera la revisión del Manager. |
-| `DONE`      | El Manager ha revisado y completado la Task.                      |
+| Estado      | Significado                                    |
+| ----------- | ---------------------------------------------- |
+| `SENT`      | Task asignada y esperando a comenzar.          |
+| `WORKING`   | El MEMBER está trabajando en la Task.          |
+| `SUBMITTED` | El MEMBER ha enviado el trabajo para revisión. |
+| `DONE`      | El Manager ha revisado y completado la Task.   |
 
 Flujo principal:
 
@@ -217,13 +260,19 @@ DONE
 
 El backend valida tanto los permisos como las transiciones de estado permitidas.
 
-La interfaz separa las Tasks activas de las completadas y permite mostrar progresivamente las Tasks `DONE` para evitar listas innecesariamente largas.
+Los Managers pueden eliminar Tasks activas cuando se ha cometido un error o la Task deja de ser necesaria.
 
-El workflow fue diseñado deliberadamente sin introducir un sistema de revisión más complejo con comentarios, adjuntos o estados adicionales, ya que el dominio actual no los necesita.
+Las Tasks completadas (`DONE`) no pueden eliminarse y permanecen en el historial de trabajo completado.
+
+Cuando se elimina una Task, sus Notifications asociadas también se eliminan para evitar notificaciones obsoletas relacionadas con trabajo que ya no existe.
+
+La interfaz separa las Tasks activas de las completadas y muestra progresivamente las Tasks `DONE` para evitar listas innecesariamente largas.
+
+El workflow fue diseñado deliberadamente sin introducir comentarios, adjuntos o estados adicionales, ya que el dominio actual no los necesita.
 
 ### 🔔 Notifications
 
-El sistema genera Notifications asociadas a eventos relevantes del producto.
+NEO genera Notifications asociadas a eventos relevantes del producto.
 
 Actualmente incluye:
 
@@ -231,6 +280,7 @@ Actualmente incluye:
 * Tasks entregadas.
 * Tasks completadas.
 * Join Requests.
+* Aprobaciones y rechazos de Join Requests.
 
 El frontend permite:
 
@@ -240,7 +290,7 @@ El frontend permite:
 * marcar todas como leídas;
 * navegar automáticamente hacia la sección correspondiente;
 * persistir las Notifications;
-* actualizar el estado periódicamente mediante polling.
+* actualizar su estado periódicamente mediante polling.
 
 La navegación es contextual:
 
@@ -281,16 +331,16 @@ El flujo es:
 ```text
 Task event
    ↓
-Notification existente
+Notification
    ↓
 Task → Team
    ↓
 Recent Team Activity
 ```
 
-La actividad se refresca automáticamente mediante polling periódico.
+La actividad se actualiza periódicamente mediante polling.
 
-No se utilizan WebSockets porque NEO no requiere sincronización en tiempo real. La aplicación está orientada a equipos que asignan trabajo, trabajan durante el día y revisan el progreso de forma periódica.
+No se utilizan WebSockets o Server-Sent Events porque NEO no requiere sincronización en tiempo real para su caso de uso actual.
 
 ### 📊 Dashboard
 
@@ -312,6 +362,7 @@ Recibe un onboarding contextual:
 No Team yet
 
 Create your own organization
+
 or join an existing Team.
 
 [Create Organization]
@@ -326,26 +377,32 @@ La interfaz incluye:
 
 * Landing Page pública.
 * Login y Register.
-* Navegación pública compartida.
 * Dashboard.
+* Profile.
 * Tasks.
 * Team.
 * Organization.
 * Join Requests.
-* Dark Mode / Light Mode mediante un toggle global.
+* Notifications.
+* Team Activity.
+* Dark Mode / Light Mode.
 * Responsive layout.
 * Navegación móvil.
-* Empty states para onboarding.
-* Estados de loading.
-* Estados de éxito.
-* Estados de error.
+* Empty states.
+* Loading states.
+* Success states.
+* Error states.
 * Prevención de acciones duplicadas.
 * Componentes UI reutilizables.
 * Navegación contextual de Notifications.
-* Team Activity.
-* Interacciones con feedback visual.
+* Navegación SPA.
+* Página 404 para rutas inexistentes.
+* Error Boundary para errores inesperados de React.
+* Feedback visual en operaciones asíncronas.
 
-No existe una página independiente de Settings. El cambio de tema está integrado directamente en la navegación global porque mantener una pantalla completa para una única preferencia no aportaba suficiente valor al producto.
+No existe una página independiente de Settings. El cambio de tema está integrado directamente en la navegación global porque mantener una pantalla completa para una única preferencia no aporta suficiente valor al producto.
+
+---
 
 ## 👥 Roles y permisos
 
@@ -353,34 +410,42 @@ NEO mantiene tres estados de usuario principales relacionados con Team membershi
 
 ```text
 user
+
 ↓
+
 Usuario autenticado que todavía no pertenece a un Team.
 
 MEMBER
+
 ↓
+
 Usuario que pertenece a un Team y puede trabajar en Tasks.
 
 manager
+
 ↓
+
 Manager responsable de gestionar el Team.
 ```
 
-La diferencia entre `user` y `MEMBER` representa principalmente pertenencia al Team.
-
-| Acción                      | Manager | MEMBER | user |
-| --------------------------- | :-----: | :----: | :--: |
-| Gestionar Team              |    ✅    |    ❌   |   ❌  |
-| Gestionar Join Requests     |    ✅    |    ❌   |   ❌  |
-| Crear Tasks                 |    ✅    |    ❌   |   ❌  |
-| Trabajar en Tasks asignadas |    ❌    |    ✅   |   ❌  |
-| Completar Tasks             |    ✅    |    ❌   |   ❌  |
-| Abandonar Team              |    ❌    |    ✅   |   ❌  |
-| Expulsar miembros           |    ✅    |    ❌   |   ❌  |
-| Promover a `MEMBER`         |    ✅    |    ❌   |   ❌  |
+| Acción                        | Manager | MEMBER | user |
+| ----------------------------- | :-----: | :----: | :--: |
+| Gestionar Team                |    ✅    |    ❌   |   ❌  |
+| Gestionar Join Requests       |    ✅    |    ❌   |   ❌  |
+| Crear Tasks                   |    ✅    |    ❌   |   ❌  |
+| Trabajar en Tasks asignadas   |    ❌    |    ✅   |   ❌  |
+| Completar Tasks               |    ✅    |    ❌   |   ❌  |
+| Eliminar Tasks activas        |    ✅    |    ❌   |   ❌  |
+| Abandonar Team                |    ❌    |    ✅   |   ❌  |
+| Expulsar miembros             |    ✅    |    ❌   |   ❌  |
+| Promover usuarios a `MEMBER`  |    ✅    |    ❌   |   ❌  |
+| Editar nombre de Organization |    ✅    |    ❌   |   ❌  |
 
 El backend es la autoridad final para todas las reglas de autorización.
 
-La interfaz no sustituye las comprobaciones de seguridad del backend.
+La interfaz mejora la experiencia de usuario, pero nunca sustituye las comprobaciones de seguridad del backend.
+
+---
 
 ## 🧪 Testing
 
@@ -388,29 +453,36 @@ La suite de backend cuenta actualmente con:
 
 ```text
 6 archivos de test
-100 tests
-100 passed
+108 tests
+108 passed
 0 failed
 ```
 
-Los tests utilizan **Vitest + Supertest** junto con una base de datos de testing aislada.
-
-La cobertura incluye:
+Los tests utilizan **Vitest + Supertest** junto con PostgreSQL y una base de datos de testing aislada.
 
 ### Auth
+
+La cobertura incluye:
 
 * Registro.
 * Login.
 * Autenticación.
+* `/auth/me`.
 * Perfil.
 * Desactivación de usuarios.
-* Casos de error.
+* Credenciales inválidas.
+* Validaciones.
+* Usuarios inactivos.
+* Casos de autorización relevantes.
 
 ### Organization y Team
+
+La cobertura incluye:
 
 * Creación.
 * Acceso.
 * Miembros.
+* Actualización de Organization.
 * Leave Team.
 * Remove Member.
 * Actualización de roles.
@@ -419,8 +491,11 @@ La cobertura incluye:
 * Permisos.
 * Usuarios pertenecientes a otros Teams.
 * Limpieza de relaciones.
+* Consistencia de membership.
 
 ### Join Requests
+
+La cobertura incluye:
 
 * Creación.
 * Solicitudes duplicadas.
@@ -431,8 +506,11 @@ La cobertura incluye:
 * Reutilización después de `approved`.
 * Reutilización después de `rejected`.
 * Eliminación asociada a un Team eliminado.
+* Asignación correcta del rol `MEMBER` al aprobar.
 
 ### Tasks
+
+La cobertura incluye:
 
 * Creación.
 * Asignación.
@@ -443,8 +521,15 @@ La cobertura incluye:
 * Protección de Tasks ajenas.
 * Completion por Manager.
 * Transiciones inválidas.
+* Eliminación de Tasks.
+* Eliminación exclusiva por Manager.
+* Protección de Tasks `DONE`.
+* Tasks inexistentes.
+* Eliminación de Notifications asociadas.
 
 La suite no se limita a comprobar el camino correcto: también valida reglas de negocio, autorización y casos límite relevantes.
+
+---
 
 ## 🏗️ Arquitectura
 
@@ -454,13 +539,21 @@ NEO utiliza una arquitectura por capas:
 
 ```text
 Routes
+
   ↓
+
 Controllers
+
   ↓
+
 Models
+
   ↓
+
 Prisma
+
   ↓
+
 PostgreSQL
 ```
 
@@ -471,9 +564,11 @@ Responsabilidades principales:
 * `models` → acceso a datos mediante Prisma;
 * `schemas` → validación de entradas con Zod;
 * `middleware` → autenticación y lógica transversal;
-* `utils` y `lib` → utilidades e integraciones de infraestructura.
+* `utils` y `lib` → utilidades e infraestructura.
 
 Los Controllers no acceden directamente a Prisma.
+
+Las operaciones de negocio que requieren varias escrituras relacionadas utilizan transacciones de Prisma para garantizar la consistencia de los datos.
 
 ### Frontend
 
@@ -481,21 +576,38 @@ La aplicación React sigue una separación similar:
 
 ```text
 App
+
  ↓
+
 React Router
+
  ↓
+
 Pages
+
  ↓
+
 Hooks / Context
+
  ↓
+
 Services
+
  ↓
+
 Backend API
 ```
 
 Los Services centralizan las peticiones HTTP y los Hooks encapsulan lógica reutilizable.
 
-El frontend también utiliza Context para responsabilidades globales como autenticación y theme management.
+El frontend utiliza Context para responsabilidades globales como:
+
+* autenticación;
+* gestión del tema.
+
+La aplicación mantiene deliberadamente una arquitectura ligera y proporcional al tamaño del dominio.
+
+---
 
 ## 🛠️ Stack
 
@@ -508,6 +620,8 @@ El frontend también utiliza Context para responsabilidades globales como autent
 * JWT
 * bcrypt
 * Zod
+* Helmet
+* express-rate-limit
 * Docker
 
 ### Frontend
@@ -524,16 +638,20 @@ El frontend también utiliza Context para responsabilidades globales como autent
 
 * Vitest
 * Supertest
+* PostgreSQL
 
-### Production
+### Producción
 
 * Render
 * Neon PostgreSQL
+
+---
 
 ## 📁 Estructura del proyecto
 
 ```text
 neo-team-management/
+
 │
 ├── prisma/
 │   ├── schema.prisma
@@ -572,6 +690,8 @@ neo-team-management/
 └── README.md
 ```
 
+---
+
 ## 🔐 Seguridad
 
 La autenticación utiliza JWT.
@@ -586,6 +706,7 @@ La API diferencia entre:
 
 ```text
 401 → problema de autenticación o sesión
+
 403 → usuario autenticado pero sin permisos
 ```
 
@@ -598,11 +719,33 @@ Ejemplos:
 * Un MEMBER no puede modificar Tasks ajenas.
 * Un Manager no puede eliminarse a sí mismo del Team.
 * Las transiciones de Task inválidas son rechazadas.
+* Las Tasks completadas no pueden eliminarse.
 * Los usuarios inactivos no pueden acceder a recursos protegidos.
 * Las Join Requests solo pueden ser gestionadas por el Manager correspondiente.
-* Los usuarios solo pueden consultar recursos de los Teams a los que pertenecen.
+* Los usuarios solo pueden acceder a los recursos de los Teams que les corresponden.
+* Un usuario que ya pertenece a un Team no puede crear otra Organization y perder silenciosamente su membership actual.
+
+La API incorpora además:
+
+* Helmet.
+* Rate limiting.
+* Límite de tamaño del JSON recibido.
+* Validación de variables de entorno al arrancar.
+* Configuración explícita de CORS.
+* Validación de entradas mediante Zod.
+* Respuestas `404` JSON para rutas API inexistentes.
 
 Los secretos como `JWT_SECRET` y `DATABASE_URL` no forman parte del repositorio.
+
+### Almacenamiento de sesión
+
+El frontend almacena actualmente el JWT del lado cliente y lo envía como Bearer token.
+
+Para un sistema de producción con mayores garantías frente al acceso de JavaScript al token, una arquitectura basada en cookies `httpOnly`, sesiones renovables y rotación de refresh tokens sería una evolución natural.
+
+La solución actual es deliberada y proporcional al alcance de este proyecto de portfolio.
+
+---
 
 ## 🗄️ Base de datos
 
@@ -625,71 +768,83 @@ Las Tasks pertenecen a un Team y tienen un usuario asignado.
 
 Las Notifications mantienen una referencia opcional a una Task.
 
-Esto permite relacionar eventos de trabajo con su Task y, mediante ella, obtener la actividad reciente del Team.
+Esto permite relacionar eventos de trabajo con sus Tasks y, mediante ellas, obtener actividad reciente del Team.
 
-La eliminación de Teams se ejecuta mediante una transacción para garantizar la consistencia de los datos relacionados.
+Las operaciones que combinan varias escrituras relacionadas se ejecutan mediante transacciones para mantener la consistencia.
+
+Por ejemplo, al eliminar una Task se eliminan sus Notifications asociadas junto con la Task dentro de la misma operación transaccional.
+
+La eliminación de Teams también se ejecuta mediante una transacción para garantizar la limpieza consistente de los datos relacionados.
+
+---
 
 ## 📡 Endpoints principales
 
 ### Auth
 
-| Método | Endpoint         | Descripción                 |
-| ------ | ---------------- | --------------------------- |
-| GET    | `/ping`          | Health check                |
-| POST   | `/auth/register` | Registrar usuario           |
-| POST   | `/auth/login`    | Iniciar sesión              |
-| GET    | `/auth/me`       | Obtener usuario autenticado |
-| PUT    | `/auth/me`       | Actualizar usuario          |
-| DELETE | `/auth/me`       | Desactivar usuario          |
+| Método   | Endpoint         | Descripción                 |
+| -------- | ---------------- | --------------------------- |
+| `GET`    | `/ping`          | Health check                |
+| `POST`   | `/auth/register` | Registrar usuario           |
+| `POST`   | `/auth/login`    | Iniciar sesión              |
+| `GET`    | `/auth/me`       | Obtener usuario autenticado |
+| `PUT`    | `/auth/me`       | Actualizar usuario          |
+| `DELETE` | `/auth/me`       | Desactivar usuario          |
 
 ### Organizations
 
-| Método | Endpoint                                 | Descripción               |
-| ------ | ---------------------------------------- | ------------------------- |
-| POST   | `/organizations`                         | Crear Organization + Team |
-| GET    | `/organizations/:organizationId`         | Obtener Organization      |
-| GET    | `/organizations/:organizationId/members` | Obtener miembros          |
+| Método  | Endpoint                                 | Descripción               |
+| ------- | ---------------------------------------- | ------------------------- |
+| `POST`  | `/organizations`                         | Crear Organization + Team |
+| `GET`   | `/organizations/:organizationId`         | Obtener Organization      |
+| `GET`   | `/organizations/:organizationId/members` | Obtener miembros          |
+| `PATCH` | `/organizations/:organizationId`         | Actualizar Organization   |
 
 ### Teams
 
-| Método | Endpoint                              | Descripción            |
-| ------ | ------------------------------------- | ---------------------- |
-| GET    | `/teams/:teamId`                      | Obtener Team           |
-| GET    | `/teams/:teamId/members`              | Obtener miembros       |
-| GET    | `/teams/:teamId/tasks`                | Obtener Tasks del Team |
-| DELETE | `/teams/:teamId/members/me`           | Abandonar Team         |
-| DELETE | `/teams/:teamId/members/:userId`      | Expulsar miembro       |
-| PATCH  | `/teams/:teamId/members/:userId/role` | Actualizar rol         |
-| PATCH  | `/teams/:teamId`                      | Actualizar Team        |
-| DELETE | `/teams/:teamId`                      | Eliminar Team          |
+| Método   | Endpoint                              | Descripción            |
+| -------- | ------------------------------------- | ---------------------- |
+| `GET`    | `/teams/:teamId`                      | Obtener Team           |
+| `GET`    | `/teams/:teamId/members`              | Obtener miembros       |
+| `GET`    | `/teams/:teamId/tasks`                | Obtener Tasks del Team |
+| `DELETE` | `/teams/:teamId/members/me`           | Abandonar Team         |
+| `DELETE` | `/teams/:teamId/members/:userId`      | Expulsar miembro       |
+| `PATCH`  | `/teams/:teamId/members/:userId/role` | Actualizar rol         |
+| `PATCH`  | `/teams/:teamId`                      | Actualizar Team        |
+| `DELETE` | `/teams/:teamId`                      | Eliminar Team          |
 
 ### Join Requests
 
-| Método | Endpoint                          | Descripción                    |
-| ------ | --------------------------------- | ------------------------------ |
-| POST   | `/team-join-requests`             | Crear solicitud                |
-| GET    | `/team-join-requests`             | Obtener solicitudes pendientes |
-| PATCH  | `/team-join-requests/:id/approve` | Aprobar solicitud              |
-| PATCH  | `/team-join-requests/:id/reject`  | Rechazar solicitud             |
+| Método  | Endpoint                          | Descripción                    |
+| ------- | --------------------------------- | ------------------------------ |
+| `POST`  | `/team-join-requests`             | Crear solicitud                |
+| `GET`   | `/team-join-requests`             | Obtener solicitudes pendientes |
+| `PATCH` | `/team-join-requests/:id/approve` | Aprobar solicitud              |
+| `PATCH` | `/team-join-requests/:id/reject`  | Rechazar solicitud             |
 
 ### Tasks
 
-| Método | Endpoint                | Descripción               |
-| ------ | ----------------------- | ------------------------- |
-| POST   | `/teams/:teamId/tasks`  | Crear Task                |
-| GET    | `/tasks/me`             | Obtener Tasks del usuario |
-| PATCH  | `/tasks/:taskId/status` | Actualizar estado         |
+| Método   | Endpoint                | Descripción               |
+| -------- | ----------------------- | ------------------------- |
+| `POST`   | `/teams/:teamId/tasks`  | Crear Task                |
+| `GET`    | `/tasks/me`             | Obtener Tasks del usuario |
+| `PATCH`  | `/tasks/:taskId/status` | Actualizar estado         |
+| `DELETE` | `/tasks/:taskId`        | Eliminar Task activa      |
 
 ### Notifications
 
-| Método | Endpoint                      | Descripción                         |
-| ------ | ----------------------------- | ----------------------------------- |
-| GET    | `/notifications`              | Obtener Notifications del usuario   |
-| GET    | `/notifications/unread`       | Obtener Notifications no leídas     |
-| GET    | `/notifications/unread/count` | Obtener contador de no leídas       |
-| GET    | `/notifications/team`         | Obtener actividad reciente del Team |
-| PATCH  | `/notifications/:id/read`     | Marcar Notification como leída      |
-| PATCH  | `/notifications/read-all`     | Marcar todas como leídas            |
+| Método  | Endpoint                      | Descripción                         |
+| ------- | ----------------------------- | ----------------------------------- |
+| `GET`   | `/notifications`              | Obtener Notifications               |
+| `GET`   | `/notifications/unread`       | Obtener Notifications no leídas     |
+| `GET`   | `/notifications/unread/count` | Obtener contador de no leídas       |
+| `GET`   | `/notifications/team`         | Obtener actividad reciente del Team |
+| `PATCH` | `/notifications/:id/read`     | Marcar Notification como leída      |
+| `PATCH` | `/notifications/read-all`     | Marcar todas como leídas            |
+
+Las rutas inexistentes de la API responden con `404` en formato JSON.
+
+---
 
 ## ⚙️ Instalación
 
@@ -703,6 +858,7 @@ La eliminación de Teams se ejecuta mediante una transacción para garantizar la
 
 ```bash
 git clone https://github.com/pablorb044/neo-team-management.git
+
 cd neo-team-management
 ```
 
@@ -714,14 +870,17 @@ npm install
 
 ### 3. Configurar variables de entorno
 
-Copiar `.env.example` como `.env` y configurar los valores correspondientes.
+Copia `.env.example` como `.env` y configura los valores correspondientes.
 
 Ejemplo:
 
 ```env
 PORT=3000
+
 JWT_SECRET=your_jwt_secret_here
+
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/auth_api"
+
 FRONTEND_URL=http://localhost:5173
 ```
 
@@ -753,13 +912,17 @@ En otra terminal:
 
 ```bash
 cd auth-client
+
 npm install
+
 npm run dev
 ```
 
 Frontend:
 
 http://localhost:5173
+
+---
 
 ## 🧰 Comandos útiles
 
@@ -768,17 +931,26 @@ http://localhost:5173
 ```bash
 npm run dev
 npm run lint
-npm run test
+npm test
+```
+
+Para ejecutar toda la suite en modo CI:
+
+```bash
+npm test -- --run
 ```
 
 ### Frontend
 
 ```bash
 cd auth-client
+
 npm run dev
 npm run lint
 npm run build
 ```
+
+---
 
 ## 🔄 Flujo end-to-end
 
@@ -820,7 +992,7 @@ DONE
 MEMBER RECEIVES NOTIFICATION
 ```
 
-El flujo de trabajo se complementa con Team Activity:
+El flujo se complementa con Team Activity:
 
 ```text
 Task event
@@ -829,10 +1001,12 @@ Notification
    ↓
 Team Activity
    ↓
-Recent activity
+Recent Activity
 ```
 
-Este flujo ha sido probado de extremo a extremo en la aplicación y está respaldado por la suite de integración del backend.
+El flujo principal ha sido validado funcionalmente en la aplicación y está respaldado por la suite de integración del backend.
+
+---
 
 ## 🎯 Filosofía del proyecto
 
@@ -856,40 +1030,68 @@ Por ejemplo:
 
 * No se añadió Search sin una funcionalidad real detrás.
 * No se mantuvo una página Settings separada para una única preferencia.
-* No se introdujeron WebSockets porque el producto no necesita sincronización en tiempo real.
-* No se creó un Activity Log independiente cuando las Notifications existentes ya representaban los eventos necesarios.
+* No se introdujeron WebSockets o SSE porque el producto actual funciona correctamente con polling periódico.
+* No se creó un Activity Log independiente cuando las Notifications existentes ya representan los eventos necesarios.
 * No se convirtió el workflow de revisión de Tasks en un sistema complejo de comentarios, archivos o estados adicionales.
 * No se añadió una arquitectura de microservicios porque el dominio y la escala actual no la justifican.
+* No se introdujo una librería de gestión de datos cliente más compleja porque el tamaño actual de la aplicación no la requiere.
+* No se añadió funcionalidad CRUD innecesaria a Tasks más allá de las acciones con valor real para el usuario.
 
 El objetivo no es tener el mayor número posible de funcionalidades.
 
-El objetivo es construir una aplicación full-stack pequeña, completa, mantenible y realista tomando decisiones técnicas y de producto justificadas.
+El objetivo es construir una aplicación full-stack pequeña, completa, mantenible y realista, tomando decisiones técnicas y de producto justificadas.
+
+---
 
 ## 📌 Estado actual
 
 ```text
-AUTH                       ✅
-ORGANIZATION               ✅
-TEAM                       ✅
-TEAM MANAGEMENT            ✅
-JOIN REQUESTS              ✅
-TASKS                      ✅
-TASK REVIEW UX             ✅
-DASHBOARD                  ✅
-NOTIFICATIONS              ✅
-TEAM ACTIVITY              ✅
-DARK / LIGHT THEME         ✅
-RESPONSIVE UI              ✅
-TESTS                      ✅ 100/100
-PRODUCTION                 ✅
-PUBLIC DEMO                ✅
-PRODUCT REVIEW             ✅
-UX / PRODUCT POLISH        ✅
+AUTH                         ✅
+
+PROFILE                      ✅
+
+ORGANIZATION                 ✅
+
+TEAM                         ✅
+
+TEAM MANAGEMENT              ✅
+
+JOIN REQUESTS                ✅
+
+TASK WORKFLOW                ✅
+
+TASK DELETION                ✅
+
+TASK REVIEW UX               ✅
+
+DASHBOARD                    ✅
+
+NOTIFICATIONS                ✅
+
+TEAM ACTIVITY                ✅
+
+DARK / LIGHT THEME           ✅
+
+RESPONSIVE UI                ✅
+
+404 HANDLING                 ✅
+
+ERROR BOUNDARY               ✅
+
+TESTS                        ✅ 108/108
+
+API HARDENING                ✅
+
+PRODUCTION                   ✅
+
+PUBLIC DEMO                  ✅
 ```
 
-NEO se encuentra en su fase final de preparación como proyecto de portfolio.
+NEO es un proyecto de portfolio terminado y desplegado públicamente.
 
-El producto principal está terminado y desplegado públicamente.
+La versión actual está centrada en demostrar fundamentos de ingeniería full-stack y capacidad de tomar decisiones técnicas y de producto con un alcance controlado.
+
+---
 
 ## 👨‍💻 Sobre el proyecto
 
@@ -897,16 +1099,19 @@ NEO es un proyecto de portfolio orientado a demostrar experiencia práctica en:
 
 * diseño de APIs REST;
 * autenticación y autorización;
+* control de acceso basado en roles;
 * modelado relacional;
 * PostgreSQL y Prisma;
 * arquitectura de aplicaciones React;
-* gestión de estado;
 * Context API;
-* custom hooks;
+* Custom Hooks;
 * componentes reutilizables;
 * testing de integración;
 * responsive UI/UX;
-* deployment y configuración de producción;
+* deployment;
+* configuración de producción;
+* seguridad básica de APIs;
+* transacciones y consistencia de datos;
 * evolución incremental de producto;
 * toma de decisiones técnicas y de producto.
 
@@ -914,20 +1119,22 @@ El proyecto está construido como una aplicación real con reglas de negocio, pe
 
 El objetivo principal de NEO como portfolio es demostrar no solo la capacidad de escribir código, sino también la capacidad de decidir qué construir, qué no construir y por qué.
 
+---
+
 ## 🔗 Enlaces
 
-**GitHub**
+### GitHub
 
 https://github.com/pablorb044/neo-team-management
 
-**Live Demo**
+### Demo online
 
 https://neo-frontend-0b1h.onrender.com/
 
-**Backend**
+### Backend
 
 https://neo-31hl.onrender.com
 
-**Health Check**
+### Health Check
 
 https://neo-31hl.onrender.com/ping
