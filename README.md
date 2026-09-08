@@ -306,6 +306,9 @@ y:
 
 ```text
 TEAM_JOIN_REQUEST
+        ↓
+/join-requests
+
 TEAM_JOIN_APPROVED
 TEAM_JOIN_REJECTED
         ↓
