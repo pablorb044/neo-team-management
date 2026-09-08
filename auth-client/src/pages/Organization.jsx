@@ -202,7 +202,7 @@ function Organization() {
                   {editingName ? (
                     <form
                       onSubmit={handleUpdateOrganization}
-                      className="mt-2 flex gap-2"
+                      className="mt-3 flex max-w-fit flex-wrap items-center gap-2"
                     >
                       <input
                         type="text"
@@ -214,23 +214,26 @@ function Organization() {
                         minLength={2}
                         required
                         className="
-                          min-w-0
-                          flex-1
+                          w-48
                           rounded-xl
                           border
                           border-white/10
                           bg-white/5
                           px-3
                           py-2
+                          text-sm
                           text-[var(--text-primary)]
                           outline-none
+                          transition
+                          focus:border-violet-500/50
+                          focus:bg-white/10
                         "
                       />
 
                       <Button
                         type="submit"
                         disabled={savingName}
-                        className="w-auto"
+                        className="!w-auto px-6 py-2 text-sm"
                       >
                         {savingName ? 'Saving...' : 'Save'}
                       </Button>
@@ -243,13 +246,13 @@ function Organization() {
                           setEditingName(false)
                           setNameError('')
                         }}
-                        className="w-auto bg-white/10 hover:bg-white/20"
+                        className="!w-auto bg-white/10 px-3 py-2 text-sm hover:bg-white/20"
                       >
                         Cancel
                       </Button>
                     </form>
                   ) : (
-                    <div className="mt-1 flex items-center gap-3">
+                    <div className="mt-2 flex max-w-fit items-center gap-3">
                       <h2 className="text-xl font-semibold">
                         {organization.name}
                       </h2>
@@ -262,7 +265,7 @@ function Organization() {
                             setEditingName(true)
                             setNameError('')
                           }}
-                          className="w-auto px-3 py-2 text-sm"
+                          className="!w-auto px-6 py-2 text-sm"
                         >
                           Edit
                         </Button>
