@@ -4,7 +4,8 @@ import {
   getMyTasks,
   getTeamTasks,
   createTask as createTaskApi,
-  updateTaskStatus
+  updateTaskStatus,
+  deleteTask as deleteTaskApi
 } from '../services/task.api'
 
 export function useTasks() {
@@ -112,6 +113,25 @@ export function useTasks() {
     }
   }
 
+  const removeTask = async (taskId) => {
+    try {
+      setError('')
+
+      await deleteTaskApi(taskId)
+
+      setTasks(currentTasks =>
+        currentTasks.filter(task => task.id !== taskId)
+      )
+    } catch (error) {
+      setError(
+        error.response?.data?.error ||
+        'Error al eliminar la tarea'
+      )
+
+      throw error
+    }
+  }
+
   const createNewTask = async (data) => {
   if (!user?.teamId) {
     throw new Error('User has no team')
@@ -139,7 +159,7 @@ export function useTasks() {
 
     throw error
   }
-}
+  }
 
   return {
     tasks,
@@ -147,6 +167,7 @@ export function useTasks() {
     error,
     refreshTasks: loadTasks,
     createNewTask,
-    changeTaskStatus
+    changeTaskStatus,
+    removeTask
   }
 }

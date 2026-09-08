@@ -1483,6 +1483,286 @@ it('should reject a MEMBER from moving a submitted task to DONE', async () => {
   )
 })
 
+it('should allow the team manager to delete a task', async () => {
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Manager',
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerToken = managerLogin.body.token
+
+  const organizationResponse = await request(app)
+    .post('/organizations')
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      organizationName: 'Acme',
+      teamName: 'Engineering'
+    })
+
+  const teamId = organizationResponse.body.team.id
+
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Pablo',
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const memberLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const memberMe = await request(app)
+    .get('/auth/me')
+    .set('Authorization', `Bearer ${memberLogin.body.token}`)
+
+  await prisma.user.update({
+    where: {
+      id: memberMe.body.id
+    },
+    data: {
+      teamId,
+      role: 'MEMBER'
+    }
+  })
+
+  const taskResponse = await request(app)
+    .post(`/teams/${teamId}/tasks`)
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      title: 'Task to delete',
+      description: 'This task should be deleted',
+      assignedToId: memberMe.body.id
+    })
+
+  expect(taskResponse.status).toBe(201)
+
+  const deleteResponse = await request(app)
+    .delete(`/tasks/${taskResponse.body.id}`)
+    .set('Authorization', `Bearer ${managerToken}`)
+
+  expect(deleteResponse.status).toBe(204)
+  
+  const deletedNotifications = await prisma.notification.findMany({
+    where: {
+      taskId: taskResponse.body.id
+    }
+  })
+
+  expect(deletedNotifications).toHaveLength(0)
+
+  const deletedTask = await prisma.task.findUnique({
+    where: {
+      id: taskResponse.body.id
+    }
+  })
+
+  expect(deletedTask).toBeNull()
+})
+
+it('should reject a MEMBER from deleting a task', async () => {
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Manager',
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerToken = managerLogin.body.token
+
+  const organizationResponse = await request(app)
+    .post('/organizations')
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      organizationName: 'Acme',
+      teamName: 'Engineering'
+    })
+
+  const teamId = organizationResponse.body.team.id
+
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Pablo',
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const memberLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const memberMe = await request(app)
+    .get('/auth/me')
+    .set('Authorization', `Bearer ${memberLogin.body.token}`)
+
+  const memberId = memberMe.body.id
+
+  await prisma.user.update({
+    where: {
+      id: memberId
+    },
+    data: {
+      teamId,
+      role: 'MEMBER'
+    }
+  })
+
+  const taskResponse = await request(app)
+    .post(`/teams/${teamId}/tasks`)
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      title: 'Protected task',
+      assignedToId: memberId
+    })
+
+  const deleteResponse = await request(app)
+    .delete(`/tasks/${taskResponse.body.id}`)
+    .set('Authorization', `Bearer ${memberLogin.body.token}`)
+
+  expect(deleteResponse.status).toBe(403)
+  expect(deleteResponse.body.error).toBe(
+    'Only the team manager can delete tasks'
+  )
+})
+
+it('should reject deleting a completed task', async () => {
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Manager',
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerToken = managerLogin.body.token
+
+  const organizationResponse = await request(app)
+    .post('/organizations')
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      organizationName: 'Acme',
+      teamName: 'Engineering'
+    })
+
+  const teamId = organizationResponse.body.team.id
+
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Pablo',
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const memberLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'pablo@test.com',
+      password: '123456'
+    })
+
+  const memberMe = await request(app)
+    .get('/auth/me')
+    .set('Authorization', `Bearer ${memberLogin.body.token}`)
+
+  const memberId = memberMe.body.id
+
+  await prisma.user.update({
+    where: {
+      id: memberId
+    },
+    data: {
+      teamId,
+      role: 'MEMBER'
+    }
+  })
+
+  const taskResponse = await request(app)
+    .post(`/teams/${teamId}/tasks`)
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      title: 'Completed task',
+      assignedToId: memberId
+    })
+
+  const taskId = taskResponse.body.id
+
+  await prisma.task.update({
+    where: {
+      id: taskId
+    },
+    data: {
+      status: 'DONE'
+    }
+  })
+
+  const deleteResponse = await request(app)
+    .delete(`/tasks/${taskId}`)
+    .set('Authorization', `Bearer ${managerToken}`)
+
+  expect(deleteResponse.status).toBe(400)
+  expect(deleteResponse.body.error).toBe(
+    'Completed tasks cannot be deleted'
+  )
+})
+
+it('should reject deleting a nonexistent task', async () => {
+  await request(app)
+    .post('/auth/register')
+    .send({
+      username: 'Manager',
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const managerLogin = await request(app)
+    .post('/auth/login')
+    .send({
+      email: 'manager@test.com',
+      password: '123456'
+    })
+
+  const response = await request(app)
+    .delete('/tasks/11111111-1111-4111-8111-111111111111')
+    .set('Authorization', `Bearer ${managerLogin.body.token}`)
+
+  expect(response.status).toBe(404)
+  expect(response.body.error).toBe('Task not found')
+})
+
   afterAll(async () => {
     await prisma.$disconnect()
   })

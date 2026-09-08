@@ -108,10 +108,18 @@ export class TaskModel {
   }
 
   static async delete(id) {
-    return prisma.task.delete({
-      where: {
-        id
-      }
+    return prisma.$transaction(async (tx) => {
+      await tx.notification.deleteMany({
+        where: {
+          taskId: id
+        }
+      })
+
+      return tx.task.delete({
+        where: {
+          id
+        }
+      })
     })
   }
 

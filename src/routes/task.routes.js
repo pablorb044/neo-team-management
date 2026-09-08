@@ -27,3 +27,9 @@ taskRouter.patch(
   authMiddleware,
   TaskController.updateStatus
 )
+
+taskRouter.delete(
+  '/tasks/:taskId',
+  authMiddleware,
+  TaskController.delete
+)

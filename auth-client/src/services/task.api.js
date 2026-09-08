@@ -27,3 +27,7 @@ export const updateTaskStatus = async (taskId, status) => {
 
   return response.data
 }
+
+export const deleteTask = async (taskId) => {
+  await api.delete(`/tasks/${taskId}`)
+}

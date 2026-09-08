@@ -200,6 +200,53 @@ export class TaskController {
     }
   }
 
+  static async delete(req, res) {
+    try {
+      const { taskId } = req.params
+
+      uuidParamSchema.parse({
+        id: taskId
+      })
+
+      const task = await TaskModel.getById(taskId)
+
+      if (!task) {
+        return res.status(404).json({
+          error: 'Task not found'
+        })
+      }
+
+      if (task.team.managerId !== req.user.id) {
+        return res.status(403).json({
+          error: 'Only the team manager can delete tasks'
+        })
+      }
+
+      if (task.status === 'DONE') {
+        return res.status(400).json({
+          error: 'Completed tasks cannot be deleted'
+        })
+      }
+
+      await TaskModel.delete(taskId)
+
+      return res.status(204).send()
+
+    } catch (err) {
+      if (err.name === 'ZodError') {
+        return res.status(400).json({
+          errors: err.issues
+        })
+      }
+
+      console.error(err)
+
+      return res.status(500).json({
+        error: 'Internal server error'
+      })
+    }
+  }
+
   static async getTeamTasks(req, res) {
     try {
       const { teamId } = req.params

@@ -13,7 +13,8 @@ function Tasks() {
     loading,
     error,
     createNewTask,
-    changeTaskStatus
+    changeTaskStatus,
+    removeTask
   } = useTasks()
 
   const [members, setMembers] = useState([])
@@ -28,6 +29,8 @@ function Tasks() {
 
   const [completedVisible, setCompletedVisible] = useState(5)
   const [updatingTaskId, setUpdatingTaskId] = useState(null)
+
+  const [deletingTaskId, setDeletingTaskId] = useState(null)
 
   useEffect(() => {
     const loadMembers = async () => {
@@ -96,6 +99,29 @@ function Tasks() {
       // Error is already handled by useTasks.
     } finally {
       setUpdatingTaskId(null)
+    }
+  }
+
+  const handleDeleteTask = async (taskId, title) => {
+    if (deletingTaskId) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${title}"? This action cannot be undone.`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setDeletingTaskId(taskId)
+      await removeTask(taskId)
+    } catch {
+      // Error is already handled by useTasks.
+    } finally {
+      setDeletingTaskId(null)
     }
   }
 
@@ -461,6 +487,7 @@ function Tasks() {
 
                   </div>
 
+                  <div className="flex flex-wrap items-center gap-2">
                   {nextAction && (
                     <button
                       type="button"
@@ -470,7 +497,10 @@ function Tasks() {
                           nextAction.status
                         )
                       }
-                      disabled={updatingTaskId !== null}
+                      disabled={
+                        updatingTaskId !== null ||
+                        deletingTaskId !== null
+                      }
                       className="
                         rounded-lg
                         bg-gradient-to-r
@@ -494,6 +524,39 @@ function Tasks() {
                         : nextAction.label}
                     </button>
                   )}
+
+                  {user?.role === 'manager' && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDeleteTask(task.id, task.title)
+                      }
+                      disabled={
+                        updatingTaskId !== null ||
+                        deletingTaskId !== null
+                      }
+                      className="
+                        rounded-lg
+                        border
+                        border-red-400/20
+                        bg-red-500/10
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-red-300
+                        transition
+                        hover:bg-red-500/20
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
+                      "
+                    >
+                      {deletingTaskId === task.id
+                        ? 'Deleting...'
+                        : 'Delete'}
+                    </button>
+                  )}
+                </div>
 
                 </div>
               </Card>
