@@ -104,8 +104,7 @@ export class TeamJoinRequestModel {
         id: userId
       },
       data: {
-        teamId,
-        role: 'MEMBER'
+        teamId
       }
     })
 

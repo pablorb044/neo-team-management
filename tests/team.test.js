@@ -1165,7 +1165,6 @@ it('should allow the team manager to update the team name', async () => {
   expect(response.body.name).toBe('Backend')
 })
 
-
 it('should reject updating a team for a non-manager member', async () => {
 
   await request(app)
@@ -1215,7 +1214,9 @@ it('should reject updating a team for a non-manager member', async () => {
   const joinRequest = await request(app)
     .post('/team-join-requests')
     .set('Authorization', `Bearer ${userToken}`)
-    .send({ teamId })
+    .send({
+      teamId
+    })
 
   await request(app)
     .patch(`/team-join-requests/${joinRequest.body.id}/approve`)
@@ -1231,7 +1232,6 @@ it('should reject updating a team for a non-manager member', async () => {
   expect(response.status).toBe(403)
   expect(response.body.error).toBe('Only the team manager can update it')
 })
-
 
 it('should reject updating a team from another team', async () => {
 
@@ -1647,6 +1647,13 @@ it('should clear team membership when deleting a team', async () => {
     .patch(`/team-join-requests/${joinRequest.body.id}/approve`)
     .set('Authorization', `Bearer ${managerToken}`)
 
+  await request(app)
+    .patch(`/teams/${teamId}/members/${joinRequest.body.userId}/role`)
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      role: 'MEMBER'
+    })
+
   const userBeforeDelete = await prisma.user.findUnique({
     where: {
       email: 'pablo@test.com'
@@ -1654,27 +1661,28 @@ it('should clear team membership when deleting a team', async () => {
   })
 
   expect(userBeforeDelete.teamId).toBe(teamId)
+  expect(userBeforeDelete.role).toBe('MEMBER')
 
   const taskResponse = await request(app)
-  .post(`/teams/${teamId}/tasks`)
-  .set('Authorization', `Bearer ${managerToken}`)
-  .send({
-    title: 'Task to delete',
-    description: 'This task belongs to the team',
-    assignedToId: userBeforeDelete.id
+    .post(`/teams/${teamId}/tasks`)
+    .set('Authorization', `Bearer ${managerToken}`)
+    .send({
+      title: 'Task to delete',
+      description: 'This task belongs to the team',
+      assignedToId: userBeforeDelete.id
+    })
+
+  expect(taskResponse.status).toBe(201)
+
+  const taskNotification = await prisma.notification.findFirst({
+    where: {
+      userId: userBeforeDelete.id,
+      type: 'TASK_ASSIGNED',
+      message: 'You have been assigned a new task: "Task to delete"'
+    }
   })
 
-expect(taskResponse.status).toBe(201)
-
-const taskNotification = await prisma.notification.findFirst({
-  where: {
-    userId: userBeforeDelete.id,
-    type: 'TASK_ASSIGNED',
-    message: 'You have been assigned a new task: "Task to delete"'
-  }
-})
-
-expect(taskNotification).not.toBeNull()
+  expect(taskNotification).not.toBeNull()
 
   await request(app)
     .delete(`/teams/${teamId}`)
